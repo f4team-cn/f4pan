@@ -8,7 +8,6 @@ class SvipModel extends Model
 {
     protected $name = 'svip';
     protected $pk = 'id';
-    protected $hidden = ['cookie'];
 
     /** 获取所有正常的SVIP信息
      * @return SvipModel[]|array|\think\Collection
