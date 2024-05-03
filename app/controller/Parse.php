@@ -54,7 +54,7 @@ class Parse extends BaseController
             "User-Agent: netdisk",
             "Referer: https://pan.baidu.com/disk/home"
         );
-        $result = CurlUtils::header($header)->cookie(env('cookie'))->post($url, $data)->obj(true);
+        $result = CurlUtils::header($header)->cookie(env('baidu.cookie'))->post($url, $data)->obj(true);
         if ($result['errno'] != "0"){
             return json_encode(array('code'=>-1,'msg'=>'链接错误,请检查链接是否有效'),456);
         }
@@ -111,20 +111,23 @@ class Parse extends BaseController
         $data = [
             'encrypt' => '0',
             'extra' => urlencode('{"sekey":"' . $randsk . '"}'),
-            'fid_list' => urlencode("[").$fs_id.urlencode("]"),
+            'fid_list' => "[".$fs_id."]",
             'primaryid' => $share_id,
             'uk' => $uk,
             'product' => 'share',
             'type' => 'nolimit',
         ];
         $data = urldecode(http_build_query($data, '', '&', PHP_QUERY_RFC3986));
-        $result = CurlUtils::header($header)->cookie(env('cookie'))->post($url, $data)->obj(true);
+        $result = CurlUtils::header($header)->cookie(env('baidu.cookie'))->post($url, $data)->obj(true);
+        if ($result['errno'] != 0){
+            return responseJson(-1, "解析失败", $result);
+        }
         $filename = $result["list"][0]["server_filename"];
         $filectime = $result["list"][0]["server_ctime"];
         $filemd5 = $result["list"][0]["md5"];
         $filesize = $result["list"][0]["size"];
         $url = $result["list"][0]["dlink"];
-        $realLink = CurlUtils::ua("netdisk")->cookie($cookie[0])->get($url)->head()['Location'];
+        $realLink = CurlUtils::ua(env('baidu.ua'))->cookie($cookie[0])->get($url)->head()['Location'];
         if ($realLink == "" or str_contains($realLink, "qdall01.baidupcs.com") or !str_contains($realLink, 'tsl=0')) {
             SvipModel::updateSvip($cookie[1], array('state' => -1));
             return responseJson(-1, "解析失败，可能账号已限速，请3s后重试,账号ID{$cookie[1]}");
@@ -135,6 +138,7 @@ class Parse extends BaseController
             'filemd5' => $filemd5,
             'filesize' => $filesize,
             'dlink' => $realLink,
+            'ua' => env('baidu.ua'),
         );
         return responseJson(200, "获取成功", $result);
     }
