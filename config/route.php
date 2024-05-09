@@ -33,7 +33,7 @@ return [
     // 全局请求缓存排除规则
     'request_cache_except'  => [],
     // 默认控制器名
-    'default_controller'    => 'Index',
+    'default_controller'    => 'Install',
     // 默认操作名
     'default_action'        => 'index',
     // 操作方法后缀

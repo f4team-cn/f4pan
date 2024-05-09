@@ -24,7 +24,8 @@
         "topthink/framework": "^8.0",
         "topthink/think-orm": "^3.0",
         "topthink/think-filesystem": "^2.0",
-        "lcobucci/jwt": "^4.0"
+        "lcobucci/jwt": "^4.0",
+        "zxin/think-redis": "^2.0"
     },
     "require-dev": {
         "symfony/var-dumper": ">=4.2",

@@ -35,13 +35,26 @@ class Parse extends BaseController
 
     public function getFileList()
     {
-        $shorturl = $this->request->request('shorturl');
-        $dir = $this->request->request('dir')??'';
-        $password = $this->request->request('password');
-        $isRoot = $this->request->request('isroot')??true;
-        if (!isset($shorturl) || !isset($password)) {
-            return responseJson(-1, "error, 缺少必要参数 shorturl 或 password");
-        }
+//        $shorturl = $this->request->request('shorturl');
+//        $dir = $this->request->request('dir')??'';
+//        $password = $this->request->request('password');
+//        $isRoot = $this->request->request('isroot')??true;
+//        if (!isset($shorturl) || !isset($password)) {
+//            return responseJson(-1, "error, 缺少必要参数 shorturl 或 password");
+//        }
+//        $req_id = $this->request->request('req_id');
+//        if (!isset($req_id)) {
+//            return responseJson(-1, "error, 缺少必要参数 req_id");
+//        }
+//        $redis = \think\facade\Cache::store('redis');
+//        if (!$redis->has($req_id)) {
+//            return responseJson(-1, "error, 请先使用 动态密码");
+//        }
+//        [$shorturl, $password] =  explode('|',$redis->get($req_id));
+        $shorturl = $this->request->shorturl;
+        $password = $this->request->password;
+        $isRoot = $this->request->isroot;
+        $dir = $this->request->dir;
         if ($isRoot === null && $dir === null) {
             return responseJson(-1, "error, 请同时传入 dir 和 isroot");
         }
