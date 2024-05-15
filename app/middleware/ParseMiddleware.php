@@ -6,7 +6,6 @@ use app\model\SystemModel;
 
 class ParseMiddleware
 {
-    private $data;
     public function handle($request, \Closure $next){
         $model = new SystemModel();
         $system = $model->getAchieve()->toArray()[0];

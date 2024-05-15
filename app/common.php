@@ -46,3 +46,41 @@ function accountStatus(string $cookie){
     }
     return $result['result']+['end_time'=>0];
 }
+
+function formatSize(float $size, int $times = 0)
+{
+    if ($size > 1024) {
+        $size /= 1024;
+        return formatSize($size, $times + 1); // 递归处理
+    } else {
+        switch ($times) {
+            case '0':
+                $unit = ($size == 1) ? 'Byte' : 'Bytes';
+                break;
+            case '1':
+                $unit = 'KB';
+                break;
+            case '2':
+                $unit = 'MB';
+                break;
+            case '3':
+                $unit = 'GB';
+                break;
+            case '4':
+                $unit = 'TB';
+                break;
+            case '5':
+                $unit = 'PB';
+                break;
+            case '6':
+                $unit = 'EB';
+                break;
+            case '7':
+                $unit = 'ZB';
+                break;
+            default:
+                $unit = '单位未知';
+        }
+        return sprintf('%.2f', $size) . $unit;
+    }
+}

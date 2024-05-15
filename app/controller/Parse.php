@@ -3,7 +3,9 @@
 namespace app\controller;
 
 use app\BaseController;
+use app\model\StatsModel;
 use app\model\SvipModel;
+use app\model\SystemModel;
 use app\utils\CurlUtils;
 use think\App;
 use think\validate\ValidateRule;
@@ -32,13 +34,15 @@ class Parse extends BaseController
             return [$Svip_cookie, $Svip_id];
         }else{
             $SvipModel->updateSvip($Svip_id, ['state' => -1]);
+            $model = new StatsModel();
+            $model->addSpentSvipCount();
             return false;
         }
     }
 
     private function getSign($share_id, $uk){
         $tplconfig = "https://pan.baidu.com/share/tplconfig?shareid={$share_id}&uk={$uk}&fields=sign,timestamp&channel=chunlei&web=1&app_id=250528&clienttype=0";
-        $sign = CurlUtils::cookie(env('baidu.cookie'))->ua("netdisk")->get($tplconfig)->obj(true);
+        $sign = CurlUtils::cookie(env('baidu.cookie'))->ua(env('baidu.ua'))->get($tplconfig)->obj(true);
         return $sign;
     }
 
@@ -83,6 +87,7 @@ class Parse extends BaseController
 
     public function parseFile()
     {
+        $redis = \think\facade\Cache::store('redis');
         $fs_id = $this->request->param('fs_id');
         $timestamp = $this->request->param('timestamp');
         $sign = $this->request->param('sign');
@@ -98,6 +103,11 @@ class Parse extends BaseController
             empty($uk)
         ) {
             return responseJson(-1, "缺少必要参数");
+        }
+        if($redis->get('parse_'.$fs_id)){
+            $result = json_decode($redis->get('parse_'.$fs_id),true);
+            $result['use_cache'] = true;
+            return responseJson(200, "获取成功", $result);
         }
         if ($timestamp + 300 < time()){
             $tpl = $this->getSign($share_id, $uk)['data'];
@@ -139,7 +149,10 @@ class Parse extends BaseController
         }
         $realLink = $location['Location'];
         if ($realLink == "" or str_contains($realLink, "qdall01.baidupcs.com") or !str_contains($realLink, 'tsl=0')) {
-            SvipModel::updateSvip($cookie[1], array('state' => -1));
+            $model = new SvipModel();
+            $model->updateSvip($cookie[1], array('state' => -1));
+            $model = new StatsModel();
+            $model->addSpentSvipCount();
             return responseJson(-1, "解析失败，可能账号已限速，请3s后重试,账号ID{$cookie[1]}");
         }
         $result = array(
@@ -149,7 +162,15 @@ class Parse extends BaseController
             'filesize' => $filesize,
             'dlink' => $realLink,
             'ua' => env('baidu.ua'),
+            'use_cache'=>false
         );
+        $model = new SystemModel();
+        $last_time = $model->getAchieve()->toArray()[0]['real_url_last_time'];
+        $redis->set('parse_'.$fs_id, json_encode($result), $last_time);
+        //进入统计
+        $model = new StatsModel();
+        $model->addParsingCount();
+        $model->addTraffic($filesize);
         return responseJson(200, "获取成功", $result);
     }
 }

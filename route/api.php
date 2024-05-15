@@ -28,6 +28,7 @@ Route::group('api', function () {
             Route::post('update', '\\app\\controller\\Admin@updateSvip');
             Route::get('list', '\\app\\controller\\Admin@getSvipList');
         })->middleware(['auth']);
+        // 公告管理
         Route::group('notices', function () {
             Route::get('all', '\\app\\controller\\Admin@getAllNotice');
             Route::post('add', '\\app\\controller\\Admin@addNotice');
@@ -35,6 +36,7 @@ Route::group('api', function () {
             Route::post('delete', '\\app\\controller\\Admin@deleteNotice');
             Route::post('use', '\\app\\controller\\Admin@useNotice');
         })->middleware(['auth']);
+        // 系统管理
         Route::group('systems', function () {
             Route::get('all', '\\app\\controller\\Admin@getAllSystem');
             Route::post('add', '\\app\\controller\\Admin@addSystem');
@@ -42,10 +44,14 @@ Route::group('api', function () {
             Route::post('delete', '\\app\\controller\\Admin@deleteSystem');
             Route::post('use', '\\app\\controller\\Admin@useSystem');
         })->middleware(['auth']);
+        // 统计管理
+        Route::group('statistics', function () {
+            Route::get('get_ip', '\\app\\controller\\Statistics@getIp');
+            Route::get('get_ip_count', '\\app\\controller\\Statistics@getIpCount');
+        })->middleware(['auth']);
     });
     //公共接口
     Route::group('public', function () {
-        //TODO: 后台统计
         Route::get('get_status', '\\app\\controller\\Common@getStatus');
         Route::get('get_system', '\\app\\controller\\Common@getSystem');
         Route::get('get_notice', '\\app\\controller\\Common@getNotice');
@@ -57,6 +63,6 @@ Route::group('api', function () {
         Route::get('unicast', '\\app\\controller\\WebApi@unicast');
         Route::get('qrcode_login', '\\app\\controller\\WebApi@qrcodeLogin');
     });
-});
-Route::post('install', '\\app\\controller\\Install@index');
+})->middleware('visit');
+Route::post('install', '\\app\\controller\\Install@index');//TODO: 安装
 Route::miss('\\app\\controller\\Error@index');

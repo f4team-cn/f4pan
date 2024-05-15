@@ -30,14 +30,22 @@ CREATE TABLE `notice` (
     PRIMARY KEY (`id`)
 );
 
-CREATE TABLE `daily_stats` (
-    `stat_id` INT AUTO_INCREMENT PRIMARY KEY,
-    `stat_date` DATE NOT NULL COMMENT '统计日期',
-    `total_parsing_traffic` BIGINT NOT NULL DEFAULT 0 COMMENT '总解析流量',
-    `unique_ips_count` INT NOT NULL DEFAULT 0 COMMENT '唯一IP地址数量',
-    `spent_svip_count` INT NOT NULL DEFAULT 0 COMMENT '今日已消耗SVIP数量',
-    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '统计记录创建时间',
-    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '统计记录最后更新时间'
+CREATE TABLE `stats` (
+   `total_parsing_traffic` BIGINT NOT NULL DEFAULT 0 COMMENT '总解析流量',
+   `total_parsing_count` INT NOT NULL DEFAULT 0 COMMENT '总解析文件数',
+   `spent_svip_count` INT NOT NULL DEFAULT 0 COMMENT '已消耗SVIP数量',
+   `last_updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+   UNIQUE INDEX(`total_parsing_traffic`, `total_parsing_count`, `spent_svip_count`)
+) ENGINE=InnoDB;
+-- 初始化统计数据
+INSERT INTO `stats` (`total_parsing_traffic`, `total_parsing_count`, `spent_svip_count`) VALUES (0, 0, 0);
+
+
+CREATE TABLE `visits` (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ip_address VARCHAR(45) NOT NULL,
+    route VARCHAR(255) NOT NULL,
+    visit_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE `api_keys`(

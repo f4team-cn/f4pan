@@ -5,13 +5,17 @@ namespace app\controller;
 use app\BaseController;
 use app\model\ApiKeyModel;
 use app\model\NoticeModel;
+use app\model\StatsModel;
 use app\model\SystemModel;
 
 class Common extends BaseController
 {
     public function getStatus()
     {
-        return "TODO";
+        $model = new StatsModel();
+        $info = $model->where(1)->select()->toArray()[0];
+        $format_size = formatSize($info['total_parsing_traffic']);
+        return responseJson(200, "success", $info+['total_parsing_traffic_format' => $format_size]);
     }
 
     public function getSystem()
