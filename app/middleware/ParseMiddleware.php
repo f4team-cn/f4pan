@@ -31,7 +31,7 @@ class ParseMiddleware
             }else{
                 return responseJson(-1, "key错误");
             }
-        }elseif($system['requires_key'] == "dynamic" and $system['dynamic_key_enabled'] == 1){
+        }elseif($system['requires_key'] == "dynamic"){
             $req_id = $request->request('req_id');
             if(!isset($req_id)){
                 return responseJson(-1, "error, 缺少必要参数 req_id");

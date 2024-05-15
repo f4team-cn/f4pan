@@ -13,7 +13,6 @@ CREATE TABLE `svip` (
 CREATE TABLE `system` (
     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '系统ID',
     `admin_password` VARCHAR(255) NOT NULL COMMENT '管理员密码',
-    `dynamic_key_enabled` BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否启用动态密钥功能',
     `requires_key` enum('fixed','dynamic','none') NOT NULL DEFAULT 'dynamic' COMMENT '是否需要密钥（动态或固定）',
     `notice_id` INT DEFAULT 0 COMMENT '使用的公告ID',
     `key_last_time` INT DEFAULT 300 COMMENT '动态密钥有效时长（秒）',

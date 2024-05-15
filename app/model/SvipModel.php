@@ -17,7 +17,7 @@ class SvipModel extends Model
      */
     public function getAllNormalSvips()
     {
-        return $this->where('state', '0')->select();
+        return $this->where('state', '0')->where('svip_end_time', '>', time())->select();
     }
 
     /** 根据id获取SVIP信息

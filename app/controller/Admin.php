@@ -53,7 +53,7 @@ class Admin extends BaseController
             return responseJson(-1 , 'cookie不能为空');
         }
         $account = accountStatus($cookie);
-        if($account['loginstate'] !== 1){
+        if(!$account){
             return responseJson(-1 , 'cookie失效');
         }
         $model->addSvip([

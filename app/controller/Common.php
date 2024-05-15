@@ -64,6 +64,7 @@ class Common extends BaseController
             }
             $req_id = randomKey("f4pan_req_id_");
             $redis->set($req_id, $surl . '|' . $pwd, 300);
+            $redis->delete('f4pan_parse_key_' . $parse_key);
             return responseJson(1, '已.使.用.K.E.Y.', $req_id);
         }
         return responseJson(-1, '未.查.到.K.E.Y.');

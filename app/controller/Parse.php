@@ -19,45 +19,35 @@ class Parse extends BaseController
         $SvipModel = new SvipModel();
         $Svip = $SvipModel->getAllNormalSvips();
         $Svip = $Svip->toArray();
+        if (!$Svip){
+            return false;
+        }
         $Svip_cookie = array_column($Svip, 'cookie');
         $Svip_id = array_column($Svip, 'id');
         $rand = array_rand($Svip);
         $Svip_cookie = $Svip_cookie[$rand];
+        $info = accountStatus($Svip_cookie);
         $Svip_id = $Svip_id[$rand];
-        return [$Svip_cookie, $Svip_id];
+        if($info) {
+            return [$Svip_cookie, $Svip_id];
+        }else{
+            $SvipModel->updateSvip($Svip_id, ['state' => -1]);
+            return false;
+        }
     }
 
     private function getSign($share_id, $uk){
         $tplconfig = "https://pan.baidu.com/share/tplconfig?shareid={$share_id}&uk={$uk}&fields=sign,timestamp&channel=chunlei&web=1&app_id=250528&clienttype=0";
-        $sign = CurlUtils::cookie($this->getRandomSvipCookie())->ua("netdisk")->get($tplconfig)->obj(true);
+        $sign = CurlUtils::cookie(env('baidu.cookie'))->ua("netdisk")->get($tplconfig)->obj(true);
         return $sign;
     }
 
     public function getFileList()
     {
-//        $shorturl = $this->request->request('shorturl');
-//        $dir = $this->request->request('dir')??'';
-//        $password = $this->request->request('password');
-//        $isRoot = $this->request->request('isroot')??true;
-//        if (!isset($shorturl) || !isset($password)) {
-//            return responseJson(-1, "error, 缺少必要参数 shorturl 或 password");
-//        }
-//        $req_id = $this->request->request('req_id');
-//        if (!isset($req_id)) {
-//            return responseJson(-1, "error, 缺少必要参数 req_id");
-//        }
-//        $redis = \think\facade\Cache::store('redis');
-//        if (!$redis->has($req_id)) {
-//            return responseJson(-1, "error, 请先使用 动态密码");
-//        }
-//        [$shorturl, $password] =  explode('|',$redis->get($req_id));
         $shorturl = $this->request->shorturl;
         $password = $this->request->password;
         $isRoot = $this->request->isroot;
         $dir = $this->request->dir;
-        if ($isRoot === null && $dir === null) {
-            return responseJson(-1, "error, 请同时传入 dir 和 isroot");
-        }
         $url = 'https://pan.baidu.com/share/wxlist?channel=weixin&version=2.2.2&clienttype=25&web=1';
         $root = ($isRoot) ? "1" : "0";
         $dir = urlencode($dir);
@@ -115,6 +105,9 @@ class Parse extends BaseController
             $timestamp = $tpl['timestamp'];
         }
         $cookie = $this->getRandomSvipCookie();
+        if (!$cookie){
+            return responseJson(-1, "获取svip失败, 请重试");
+        }
         $header = array(
             "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.514.1919.810 Safari/537.36",
             "Referer: https://pan.baidu.com/disk/home"
@@ -140,7 +133,11 @@ class Parse extends BaseController
         $filemd5 = $result["list"][0]["md5"];
         $filesize = $result["list"][0]["size"];
         $url = $result["list"][0]["dlink"];
-        $realLink = CurlUtils::ua(env('baidu.ua'))->cookie($cookie[0])->get($url)->head()['Location'];
+        $location = CurlUtils::ua(env('baidu.ua'))->cookie($cookie[0])->get($url)->head();
+        if(!isset($location['Location'])){
+            return responseJson(-1, "解析失败, 请重试");
+        }
+        $realLink = $location['Location'];
         if ($realLink == "" or str_contains($realLink, "qdall01.baidupcs.com") or !str_contains($realLink, 'tsl=0')) {
             SvipModel::updateSvip($cookie[1], array('state' => -1));
             return responseJson(-1, "解析失败，可能账号已限速，请3s后重试,账号ID{$cookie[1]}");

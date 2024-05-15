@@ -29,7 +29,20 @@ function accountStatus(string $cookie){
     $url = "https://pan.baidu.com/api/gettemplatevariable?channel=chunlei&web=1&app_id=250528&clienttype=0";
     $data = "fields=[%22username%22,%22loginstate%22,%22is_vip%22,%22is_svip%22,%22is_evip%22]";
     $result = CurlUtils::ua('pc')->cookie($cookie)->post($url, $data)->obj(true);
-    $url_ = "https://pan.baidu.com/rest/2.0/membership/user?method=query&clienttype=0&app_id=250528&web=1";
-    $end_time = CurlUtils::ua('pc')->cookie($cookie)->get($url_)->obj(true)['product_infos'][0]['end_time'];
-    return $result['result']+['end_time'=>$end_time];
+    if($result['errno'] == -6){
+        return false;
+    }
+    if($result['result']['is_svip']){
+        $url_ = "https://pan.baidu.com/rest/2.0/membership/user?method=query&clienttype=0&app_id=250528&web=1";
+        $end_time = CurlUtils::ua('pc')->cookie($cookie)->get($url_)->obj(true)['product_infos'];
+        foreach ($end_time as $item){
+            if($item['detail_cluster'] == 'svip'){
+                $end_time = $item;
+                break;
+            }
+        }
+        $end_time = $end_time['end_time'];
+        return $result['result']+['end_time'=>$end_time];
+    }
+    return $result['result']+['end_time'=>0];
 }
