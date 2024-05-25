@@ -33,13 +33,15 @@ class Install extends BaseController
     }
 
     public function testDb(){
+        if(!extension_loaded('pdo_mysql')){
+            return responseJson(-1 , '请安装mysql扩展');
+        }
         $db_config = [
             'hostname' => $this->request->param('hostname')?? '127.0.0.1',
             'database' => $this->request->param('database')?? 'f4pan',
             'username' => $this->request->param('username'),
             'password' => $this->request->param('password'),
             'hostport' => $this->request->param('hostport')?? 3306,
-            'charset' => 'utf8mb4',
         ];
         //测试链接 pdo
         try{
@@ -52,6 +54,9 @@ class Install extends BaseController
     }
 
     public function testRedis(){
+        if(!extension_loaded('redis')){
+            return responseJson(-1 , '请安装redis扩展');
+        }
         $redis_config = [
             'host' => $this->request->param('host')?? '127.0.0.1',
             'port' => $this->request->param('port')?? 6379,
