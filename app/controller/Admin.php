@@ -177,12 +177,13 @@ class Admin extends BaseController
         $isActiveExists = $model->where('is_active', true)->count() > 0;
         $data = [
             'admin_password' => $this->request->param('admin_password'),
-            'dynamic_key_enabled' => $this->request->param('dynamic_key_enabled') ?? 1,
             'requires_key' => $this->request->param('requires_key') ?? 'dynamic',
             'notice_id' => $this->request->param('notice_id') ?? 0,
             'key_last_time' => $this->request->param('key_last_time') ?? 300,
             'fixed_key' => $this->request->param('fixed_key') ?? '',
             'real_url_last_time' => $this->request->param('real_url_last_time') ?? 1800,
+            'parse_ua' => $this->request->param('parse_ua') ?? 'netdisk',
+            'normal_cookie' => $this->request->param('normal_cookie') ?? '',
             'is_active' => !$isActiveExists // 如果有记录为true，则新记录为false；反之为true
         ];
         $status = $model->save($data);
@@ -200,12 +201,13 @@ class Admin extends BaseController
         }
         $data = [
             'admin_password' => $this->request->param('admin_password'),
-            'dynamic_key_enabled' => $this->request->param('dynamic_key_enabled') ?? 1,
             'requires_key' => $this->request->param('requires_key') ?? 'dynamic',
             'notice_id' => $this->request->param('notice_id') ?? 0,
             'key_last_time' => $this->request->param('key_last_time') ?? 300,
             'fixed_key' => $this->request->param('fixed_key') ?? '',
             'real_url_last_time' => $this->request->param('real_url_last_time') ?? 1800,
+            'parse_ua' => $this->request->param('parse_ua') ?? 'netdisk',
+            'normal_cookie' => $this->request->param('normal_cookie') ?? '',
         ];
         $status = $model->updateSystem($id , $data);
         if(!$status){

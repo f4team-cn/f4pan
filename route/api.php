@@ -5,7 +5,6 @@ Route::group('api', function () {
     Route::group('v1', function () {
         Route::group('parse', function () {
             Route::get('get_file_list', '\\app\\controller\\Parse@getFileList');
-            //TODO: apikey
             Route::get('parse_file', '\\app\\controller\\Parse@parseFile');
         })->middleware('parse');
     });
@@ -64,5 +63,5 @@ Route::group('api', function () {
         Route::get('qrcode_login', '\\app\\controller\\WebApi@qrcodeLogin');
     });
 })->middleware('visit');
-Route::post('install', '\\app\\controller\\Install@index');//TODO: 安装
+Route::import(['route/install']);
 Route::miss('\\app\\controller\\Error@index');

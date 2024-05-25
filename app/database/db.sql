@@ -18,6 +18,8 @@ CREATE TABLE `system` (
     `key_last_time` INT DEFAULT 300 COMMENT '动态密钥有效时长（秒）',
     `fixed_key` VARCHAR(255) NULL COMMENT '固定的密钥值（如果动态密钥禁用）',
     `real_url_last_time` INT DEFAULT 1800 COMMENT '真实链接存储时间（秒）',
+    `parse_ua` VARCHAR(255) NULL COMMENT '解析时使用的UA',
+    `normal_cookie` VARCHAR(2048) NULL COMMENT '普通Cookie',
     `is_active` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '是否为当前活动配置',
     PRIMARY KEY (`id`)
 );
@@ -40,7 +42,6 @@ CREATE TABLE `stats` (
 -- 初始化统计数据
 INSERT INTO `stats` (`total_parsing_traffic`, `total_parsing_count`, `spent_svip_count`) VALUES (0, 0, 0);
 
-
 CREATE TABLE `visits` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ip_address VARCHAR(45) NOT NULL,
@@ -50,11 +51,7 @@ CREATE TABLE `visits` (
 
 CREATE TABLE `api_keys`(
     `id` INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
-    `key` VARCHAR(255) NOT NULL COMMENT 'API Key',
+    `key` VARCHAR(32) NOT NULL COMMENT 'API Key',
     `use_count` INT NOT NULL DEFAULT 0 COMMENT '使用次数',
     UNIQUE (`key`)
 )
-
-
-
-

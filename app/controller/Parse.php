@@ -8,7 +8,6 @@ use app\model\SvipModel;
 use app\model\SystemModel;
 use app\utils\CurlUtils;
 use think\App;
-use think\validate\ValidateRule;
 
 class Parse extends BaseController
 {
@@ -42,7 +41,7 @@ class Parse extends BaseController
 
     private function getSign($share_id, $uk){
         $tplconfig = "https://pan.baidu.com/share/tplconfig?shareid={$share_id}&uk={$uk}&fields=sign,timestamp&channel=chunlei&web=1&app_id=250528&clienttype=0";
-        $sign = CurlUtils::cookie(env('baidu.cookie'))->ua(env('baidu.ua'))->get($tplconfig)->obj(true);
+        $sign = CurlUtils::cookie(SystemModel::getNormalCookie())->ua(SystemModel::getUa())->get($tplconfig)->obj(true);
         return $sign;
     }
 
@@ -61,7 +60,7 @@ class Parse extends BaseController
             "User-Agent: netdisk",
             "Referer: https://pan.baidu.com/disk/home"
         );
-        $result = CurlUtils::header($header)->cookie(env('baidu.cookie'))->post($url, $data)->obj(true);
+        $result = CurlUtils::header($header)->cookie(SystemModel::getNormalCookie())->post($url, $data)->obj(true);
         if ($result['errno'] != "0"){
             return json_encode(array('code'=>-1,'msg'=>'链接错误,请检查链接是否有效'),456);
         }
@@ -134,7 +133,7 @@ class Parse extends BaseController
             'type' => 'nolimit',
         ];
         $data = urldecode(http_build_query($data, '', '&', PHP_QUERY_RFC3986));
-        $result = CurlUtils::header($header)->cookie(env('baidu.cookie'))->post($url, $data)->obj(true);
+        $result = CurlUtils::header($header)->cookie(SystemModel::getNormalCookie())->post($url, $data)->obj(true);
         if ($result['errno'] != 0){
             return responseJson(-1, "解析失败", $result);
         }
@@ -143,7 +142,7 @@ class Parse extends BaseController
         $filemd5 = $result["list"][0]["md5"];
         $filesize = $result["list"][0]["size"];
         $url = $result["list"][0]["dlink"];
-        $location = CurlUtils::ua(env('baidu.ua'))->cookie($cookie[0])->get($url)->head();
+        $location = CurlUtils::ua(SystemModel::getUa())->cookie($cookie[0])->get($url)->head();
         if(!isset($location['Location'])){
             return responseJson(-1, "解析失败, 请重试");
         }
@@ -161,7 +160,7 @@ class Parse extends BaseController
             'filemd5' => $filemd5,
             'filesize' => $filesize,
             'dlink' => $realLink,
-            'ua' => env('baidu.ua'),
+            'ua' => SystemModel::getUa(),
             'use_cache'=>false
         );
         $model = new SystemModel();

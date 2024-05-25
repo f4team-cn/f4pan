@@ -29,6 +29,25 @@ class SystemModel extends Model
         return $this->where('is_active', 1)->select();
     }
 
+    /** 获取ua
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public static function getUa(){
+        return self::where('is_active', 1)->select()[0]['parse_ua'];
+    }
+
+    /** 获取普通cookie
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public static function getNormalCookie(){
+        return self::where('is_active', 1)->select()[0]['normal_cookie'];
+    }
     /** 通过id获取表内容
      * @param int $id
      * @return array|mixed
