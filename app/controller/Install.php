@@ -10,7 +10,7 @@ class Install extends BaseController
 {
     public function checkEnv(){
         //php版本要求大于8.0
-        $php_version = version_compare(phpversion(), '8.0', '>=');
+        $php_version = version_compare(phpversion(), '8.1', '>=');
         $ext_check['php_version'] = phpversion();
         if (!$php_version){
             return responseJson(-1 , 'PHP版本要求大于8.0');

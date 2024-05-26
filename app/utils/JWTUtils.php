@@ -19,7 +19,7 @@ use Lcobucci\JWT\Validation\RequiredConstraintsViolated;
  */
 class JWTUtils
 {
-    private static string $KEY = 'd5694768b46c791acbbafaa3468d884abb2d2f2e';
+    private static string $KEY = 'ba06aefedf58341f2e193bf8ac2b3bd88c710d22acac';
     private static string $ISSUED = 'f4team.cn';
     private static string $PERMITTED = 'f4pan.f4team.cn';
 
