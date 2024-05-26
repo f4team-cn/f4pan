@@ -22,7 +22,10 @@ class Common extends BaseController
     {
         $model = new SystemModel();
         $active = $model->getAchieve();
-        return responseJson(1, '获.取.了.', $active->toArray());
+        $system = $active->toArray();
+        unset($system[0]["normal_cookie"]);
+        unset($system[0]["admin_password"]);
+        return responseJson(1, '获.取.了.', $system);
     }
 
     public function getNotice()
