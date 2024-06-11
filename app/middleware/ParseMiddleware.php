@@ -12,20 +12,27 @@ class ParseMiddleware
         if($system['requires_key'] == "fixed"){
             $key = $system['fixed_key'];
             if($key == $request->param('key')){
-                $shorturl = $request->request('shorturl');
                 $dir = $request->request('dir')??'';
                 $password = $request->request('password');
                 $isRoot = $request->request('isroot')??true;
                 $sign = $request->request('sign');
-                if(!$sign){
-                    if (!isset($shorturl) || !isset($password)) {
-                        return responseJson(-1, "error, 缺少必要参数 shorturl 或 password");
-                    }
+                $surl = $request->request('surl');
+                $fs_id = $request->request('fs_id')??'';
+                $randsk = $request->request('randsk')??'';
+                $share_id = $request->request('share_id')??'';
+                $uk = $request->request('uk')??'';
+                if (!isset($surl) || !isset($password)) {
+                    return responseJson(-1, "error, 缺少必要参数 surl 或 password");
                 }
-                $request->shorturl = $shorturl;
+                $request->surl = $surl;
                 $request->password = $password;
                 $request->isroot = $isRoot;
                 $request->dir = $dir;
+                $request->surl = $surl;
+                $request->fs_id = $fs_id;
+                $request->randsk = $randsk;
+                $request->share_id = $share_id;
+                $request->uk = $uk;
                 return $next($request);
             }else{
                 return responseJson(-1, "key错误");
@@ -40,29 +47,45 @@ class ParseMiddleware
                 return responseJson(-1, "error, 请先使用 动态密码");
             }
 //            $this->data->req_id = $req_id;
-            [$shorturl, $password] =  explode('|',$redis->get($req_id));
+            [$surl, $password] =  explode('|',$redis->get($req_id));
             $dir = $request->request('dir')??'';
             $isRoot = $request->request('isroot')??true;
-            $request->shorturl = $shorturl;
+            $fs_id = $request->request('fs_id')??'';
+            $randsk = $request->request('randsk')??'';
+            $share_id = $request->request('share_id')??'';
+            $uk = $request->request('uk')??'';
+            $request->surl = $surl;
             $request->password = $password;
             $request->isroot = $isRoot;
             $request->dir = $dir;
+            $request->surl = $surl;
+            $request->fs_id = $fs_id;
+            $request->randsk = $randsk;
+            $request->share_id = $share_id;
+            $request->uk = $uk;
             return $next($request);
         }elseif ($system['requires_key'] == "none"){
-            $shorturl = $request->request('shorturl');
             $dir = $request->request('dir')??'';
             $password = $request->request('password');
             $isRoot = $request->request('isroot')??true;
             $sign = $request->request('sign');
-            if(!$sign){
-                if (!isset($shorturl) || !isset($password)) {
-                    return responseJson(-1, "error, 缺少必要参数 shorturl 或 password");
-                }
+            $surl = $request->request('surl');
+            $fs_id = $request->request('fs_id')??'';
+            $randsk = $request->request('randsk')??'';
+            $share_id = $request->request('share_id')??'';
+            $uk = $request->request('uk')??'';
+            if (!isset($surl) || !isset($password)) {
+                return responseJson(-1, "error, 缺少必要参数 surl 或 password");
             }
-            $request->shorturl = $shorturl;
+            $request->surl = $surl;
             $request->password = $password;
             $request->isroot = $isRoot;
             $request->dir = $dir;
+            $request->surl = $surl;
+            $request->fs_id = $fs_id;
+            $request->randsk = $randsk;
+            $request->share_id = $share_id;
+            $request->uk = $uk;
             return $next($request);
         }
         return $next($request);

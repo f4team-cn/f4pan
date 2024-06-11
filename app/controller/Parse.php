@@ -9,6 +9,7 @@ use app\model\SystemModel;
 use app\utils\CurlUtils;
 use think\App;
 
+//废弃
 class Parse extends BaseController
 {
     public function __construct(App $app)
@@ -29,8 +30,12 @@ class Parse extends BaseController
         $Svip_cookie = $Svip_cookie[$rand];
         $info = accountStatus($Svip_cookie);
         $Svip_id = $Svip_id[$rand];
+        $svip_localstate = array_column($Svip, 'local_state');
+        $svip_localstate = $svip_localstate[$rand];
+        $svip_access_token = array_column($Svip, 'access_token');
+        $svip_access_token = $svip_access_token[$rand];
         if($info) {
-            return [$Svip_cookie, $Svip_id];
+            return [$Svip_cookie, $Svip_id, $svip_localstate, $svip_access_token];
         }else{
             $SvipModel->updateSvip($Svip_id, ['state' => -1]);
             $model = new StatsModel();
@@ -47,7 +52,7 @@ class Parse extends BaseController
 
     public function getFileList()
     {
-        $shorturl = $this->request->shorturl;
+        $shorturl = $this->request->surl;
         $password = $this->request->password;
         $isRoot = $this->request->isroot;
         $dir = $this->request->dir;
@@ -55,7 +60,6 @@ class Parse extends BaseController
         $root = ($isRoot) ? "1" : "0";
         $dir = urlencode($dir);
         $data = "shorturl=$shorturl&dir=$dir&root=$root&pwd=$password&page=1&num=1000&order=time";
-        $time = time();
         $header = array(
             "User-Agent: netdisk",
             "Referer: https://pan.baidu.com/disk/home"
@@ -80,23 +84,24 @@ class Parse extends BaseController
         $share_id = $result['data']['shareid'];
         $uk = $result['data']['uk'];
         $seckey = $result['data']['seckey'];
-        $sign = $this->getSign($share_id, $uk);
-        return responseJson(200, "获取成功", array('data'=>$array,'shareinfo'=>array('share_id'=>$share_id,'uk'=>$uk,'seckey'=>$seckey, 'sign'=>$sign['data'])));
+        $seckey = str_replace("-", "+", $seckey);
+        $seckey = str_replace("~", "=", $seckey);
+        $seckey = str_replace("_", "/", $seckey);
+        return responseJson(200, "获取成功", array('data'=>$array,'shareinfo'=>array('share_id'=>$share_id,'uk'=>$uk,'seckey'=>$seckey)));
     }
+
 
     public function parseFile()
     {
         $redis = \think\facade\Cache::store('redis');
-        $fs_id = $this->request->param('fs_id');
-        $timestamp = $this->request->param('timestamp');
-        $sign = $this->request->param('sign');
-        $randsk = $this->request->param('randsk');
-        $share_id = $this->request->param('share_id');
-        $uk = $this->request->param('uk');
+        $fs_id = $this->request->fs_id;
+        $randsk = $this->request->randsk;
+        $share_id = $this->request->share_id;
+        $uk = $this->request->uk;
+        $surl = $this->request->surl;
         if (
             empty($fs_id) ||
-            empty($timestamp) ||
-            empty($sign) ||
+            empty($surl) ||
             empty($randsk) ||
             empty($share_id) ||
             empty($uk)
@@ -108,45 +113,56 @@ class Parse extends BaseController
             $result['use_cache'] = true;
             return responseJson(200, "获取成功", $result);
         }
-        if ($timestamp + 300 < time()){
-            $tpl = $this->getSign($share_id, $uk)['data'];
-            $sign = $tpl['sign'];
-            $timestamp = $tpl['timestamp'];
-        }
         $cookie = $this->getRandomSvipCookie();
         if (!$cookie){
             return responseJson(-1, "获取svip失败, 请重试");
         }
-        $header = array(
-            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.514.1919.810 Safari/537.36",
-            "Referer: https://pan.baidu.com/disk/home"
-        );
-        $url = "https://pan.baidu.com/api/sharedownload?app_id=250528&channel=chunlei&clienttype=12&sign={$sign}&timestamp={$timestamp}&web=1";
-        if (strstr($randsk, "%") != false) $randsk = urldecode($randsk);
-        $data = [
-            'encrypt' => '0',
-            'extra' => urlencode('{"sekey":"' . $randsk . '"}'),
-            'fid_list' => "[".$fs_id."]",
-            'primaryid' => $share_id,
-            'uk' => $uk,
-            'product' => 'share',
-            'type' => 'nolimit',
-        ];
-        $data = urldecode(http_build_query($data, '', '&', PHP_QUERY_RFC3986));
-        $result = CurlUtils::header($header)->cookie(SystemModel::getNormalCookie())->post($url, $data)->obj(true);
-        if ($result['errno'] != 0){
-            return responseJson(-1, "解析失败", $result);
+        if(!self::checkDir($cookie[0])){
+            if(!self::createNewDir($cookie[0])){
+                return json_encode(array("code"=>-1, "msg"=>"创建文件夹失败"),456);
+            };
         }
-        $filename = $result["list"][0]["server_filename"];
-        $filectime = $result["list"][0]["server_ctime"];
-        $filemd5 = $result["list"][0]["md5"];
-        $filesize = $result["list"][0]["size"];
-        $url = $result["list"][0]["dlink"];
-        $location = CurlUtils::ua(SystemModel::getUa())->cookie($cookie[0])->get($url)->head();
+        $url = 'https://pan.baidu.com/s/'.$surl;
+        $array  = self::transfer($cookie,$share_id,$uk,$fs_id,$randsk,$url);
+        $to_fs_id = $array['to_fs_id'];
+        $to_path = $array['to_path'];
+        if (!$to_fs_id){
+            $id = $cookie[1];
+            $model = new SvipModel();
+            $model->updateSvip($id, ['state' =>-1]);
+            $cookie = $this->getRandomSvipCookie();
+            $array  = self::transfer($cookie,$share_id,$uk,$fs_id,$randsk,$url);
+            $to_fs_id = $array['to_fs_id'];
+            $to_path = $array['to_path'];
+//            $to_path = rawurlencode($to_path);
+            if (!$to_fs_id){
+                $model = new SvipModel();
+                $model->updateSvip($id, ['state' =>-1]);
+                return responseJson(-1, "转移文件失败");
+            }
+        }
+        $header = array(
+            "User-Agent: ". SystemModel::getUa(),
+        );
+//        $access_token = self::getAccessToken($cookie[2])["access_token"];
+        $access_token = $cookie[3];
+        $url = "https://pan.baidu.com/rest/2.0/xpan/multimedia?method=filemetas&dlink=1&fsids=%5B$to_fs_id%5D&access_token=$access_token";
+        $res = CurlUtils::header($header)->cookie($cookie[0])->get($url)->obj(true);
+        if($res['errno'] == 9019){
+            $access_token = getAccessToken($cookie[2], $cookie[1])["access_token"];
+            $url = "https://pan.baidu.com/rest/2.0/xpan/multimedia?method=filemetas&dlink=1&fsids=%5B$to_fs_id%5D&access_token=$access_token";
+            $res = CurlUtils::header($header)->cookie($cookie[0])->get($url)->obj(true);
+        }
+        $dlk = $res['list'][0]['dlink'];
+        $location = CurlUtils::ua(SystemModel::getUa())->cookie($cookie[0])->get($dlk)->head();
         if(!isset($location['Location'])){
             return responseJson(-1, "解析失败, 请重试");
         }
-        $realLink = $location['Location'];
+        $filename = $res["list"][0]["filename"];
+        $filectime = $res["list"][0]["server_ctime"];
+        $filemd5 = $res["list"][0]["md5"];
+        $filesize = $res["list"][0]["size"];
+        $realLink = $location['Location'][0];
         if ($realLink == "" or str_contains($realLink, "qdall01.baidupcs.com") or !str_contains($realLink, 'tsl=0')) {
             $model = new SvipModel();
             $model->updateSvip($cookie[1], array('state' => -1));
@@ -171,5 +187,58 @@ class Parse extends BaseController
         $model->addParsingCount();
         $model->addTraffic($filesize);
         return responseJson(200, "获取成功", $result);
+    }
+
+
+    public static function checkDir($cookie){
+        $url = 'https://pan.baidu.com/api/list?channel=chunlei&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&app_id=250528&dir=%2F&order=name&desc=0&start=0&limit=500&t=0.5963396759604782&channel=chunlei&web=1&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&logid=RENBODQ1MkY3Mzg4MEMzOUUzOTBCQ0JCRDM0NEYwMzY6Rkc9MQ==&clienttype=0&dp-logid=93935300557954940027';
+        $res = CurlUtils::cookie($cookie)->get($url)->obj(true);
+        foreach ($res['list'] as $k=>$va){
+            if($va['path'] == "/parse_file" && $va['isdir'] == 1){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function createNewDir($cookie){
+        $url = 'https://pan.baidu.com/api/create?a=commit&channel=chunlei&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&app_id=250528&channel=chunlei&web=1&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&logid=RENBODQ1MkY3Mzg4MEMzOUUzOTBCQ0JCRDM0NEYwMzY6Rkc9MQ==&clienttype=0&dp-logid=25871100140032000048';
+        $res = CurlUtils::cookie($cookie)->post($url, 'path=//parse_file&isdir=1&size=&block_list=[]&method=post&dataType=json')->obj(true);
+        if ($res['errno'] == 0){
+            return true;
+        }
+        return false;
+    }
+
+    public static function transfer($cookie, $shareid, $from, $fsid, $randsk, $shareurl){
+        $bdstoken = CurlUtils::cookie($cookie[0])->get("https://pan.baidu.com/api/gettemplatevariable?clienttype=0&app_id=250528&web=1&fields=[%22bdstoken%22,%22token%22,%22uk%22,%22isdocuser%22,%22servertime%22]")->obj(true);
+        $bdstoken = $bdstoken['result']['bdstoken'];
+        $url = "https://pan.baidu.com/share/transfer?shareid=$shareid&from=$from&channel=chunlei&seckey=$randsk&ondup=newcopy&web=1&app_id=250528&bdstoken=$bdstoken&logid=QTU4NjczRTM3OEFDNkI1NUQ0QzExQ0VFOEY5M0VGREQ6Rkc9MQ==&clienttype=0";
+        $randsk = urlencode($randsk);
+        $cookie[0] .= ";BDCLND=$randsk";
+        $header =
+            [
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63',
+                'Connection: Keep-Alive',
+                'Content-Type: application/x-www-form-urlencoded'
+            ];
+        $data = array(
+            'fsidlist'=>"[$fsid]",
+            'path'=>'/parse_file'
+        );
+        $res = CurlUtils::cookie($cookie[0])->header($header)->post($url, $data)->referer($shareurl)->obj(true);
+        if($res['errno'] == 9013){
+            $model = new SvipModel();
+            $model->updateSvip($cookie[1], array('state' => -1));
+            return array('to_path'=>null,'to_fs_id'=>null,'cookie'=>$cookie);;
+        }
+        if($res['errno'] == 12){
+            $model = new SvipModel();
+            $model->updateSvip($cookie[1], array('state' => -1));
+            return array('to_path'=>null,'to_fs_id'=>null,'cookie'=>$cookie);;
+        }
+        $to_path = $res['extra']['list'][0]['to'];
+        $to_fs_id = $res['extra']['list'][0]['to_fs_id'];
+        return array('to_path'=>$to_path,'to_fs_id'=>$to_fs_id,'cookie'=>$cookie);
     }
 }

@@ -49,10 +49,11 @@ class Admin extends BaseController
     public function addSvip(){
         $model = new SvipModel();
         $cookie = $this->request->param('cookie');
-        if(empty($cookie)){
-            return responseJson(-1 , 'cookie不能为空');
+        $local_state = $this->request->param('localstate');
+        if(empty($cookie) || empty($local_state)){
+            return responseJson(-1 , 'cookie或localstate不能为空');
         }
-        $account = accountStatus($cookie);
+        $account = accountStatus($cookie, $local_state);
         if(!$account){
             return responseJson(-1 , 'cookie失效');
         }
@@ -60,10 +61,13 @@ class Admin extends BaseController
             'name'=>$account['username'],
             'state'=>0,
             'cookie'=>$cookie,
+            'local_state'=>$local_state,
+            'access_token'=>$account['access_token'],
             'add_time'=>time(),
             'svip_end_time'=>$account['end_time'],
             'vip_type'=>$account['is_vip'] ? '普通用户' : ($account['is_svip'] ? '超级会员' : ($account['is_evip'] ? 'EVIP' : '普通会员'))
         ]);
+        unset($account['access_token']);
         return responseJson(1,"添.加.了.",$account);
     }
 

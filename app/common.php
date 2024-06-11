@@ -1,6 +1,7 @@
 <?php
 // 应用公共文件
 
+use app\model\SvipModel;
 use app\utils\CurlUtils;
 
 function responseJson(int $code = 200, string $message = '操作成功', mixed $data = []): \think\Response
@@ -25,7 +26,17 @@ function randomNumKey(string $text = 'f4pan_parse_key_'){
     return $parseKey;
 }
 
-function accountStatus(string $cookie){
+function getAccessToken($localstate, $id = null){
+    $url = 'http://127.0.0.1:8002/get_access_token';//使用公共的获取服务
+    $res = CurlUtils::post($url, $localstate)->obj(true);
+    $model = new SvipModel();
+    if($id){
+        $model->updateSvip($id, ['access_token' => $res['access_token'], 'local_state'=>$res['localstate']]);
+    }
+    return $res;
+}
+
+function accountStatus(string $cookie, $localstate=null){
     $url = "https://pan.baidu.com/api/gettemplatevariable?channel=chunlei&web=1&app_id=250528&clienttype=0";
     $data = "fields=[%22username%22,%22loginstate%22,%22is_vip%22,%22is_svip%22,%22is_evip%22]";
     $result = CurlUtils::ua('pc')->cookie($cookie)->post($url, $data)->obj(true);
@@ -42,6 +53,10 @@ function accountStatus(string $cookie){
             }
         }
         $end_time = $end_time['end_time'];
+        if ($localstate){
+            $access = ['access_token'=>getAccessToken($localstate)['access_token']];
+            return $result['result']+['end_time'=>$end_time]+$access;
+        }
         return $result['result']+['end_time'=>$end_time];
     }
     return $result['result']+['end_time'=>0];
