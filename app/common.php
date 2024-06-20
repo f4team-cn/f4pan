@@ -26,15 +26,15 @@ function randomNumKey(string $text = 'f4pan_parse_key_'){
     return $parseKey;
 }
 
-function getAccessToken($localstate, $id = null){
-    $url = 'http://127.0.0.1:8002/get_access_token';//使用公共的获取服务
-    $res = CurlUtils::post($url, $localstate)->obj(true);
-    $model = new SvipModel();
-    if($id){
-        $model->updateSvip($id, ['access_token' => $res['access_token'], 'local_state'=>$res['localstate']]);
-    }
-    return $res;
-}
+//function getAccessToken($localstate, $id = null){
+//    $url = 'http://127.0.0.1:8003/get_access_token';//使用公共的获取服务
+//    $res = CurlUtils::post($url, $localstate)->obj(true);
+//    $model = new SvipModel();
+//    if($id){
+//        $model->updateSvip($id, ['access_token' => $res['access_token'], 'local_state'=>$res['localstate']]);
+//    }
+//    return $res;
+//}
 
 function accountStatus(string $cookie, $localstate=null){
     $url = "https://pan.baidu.com/api/gettemplatevariable?channel=chunlei&web=1&app_id=250528&clienttype=0";
@@ -53,10 +53,10 @@ function accountStatus(string $cookie, $localstate=null){
             }
         }
         $end_time = $end_time['end_time'];
-        if ($localstate){
-            $access = ['access_token'=>getAccessToken($localstate)['access_token']];
-            return $result['result']+['end_time'=>$end_time]+$access;
-        }
+//        if ($localstate){
+//            $access = ['access_token'=>getAccessToken($localstate)['access_token']];
+//            return $result['result']+['end_time'=>$end_time]+$access;
+//        }
         return $result['result']+['end_time'=>$end_time];
     }
     return $result['result']+['end_time'=>0];
@@ -98,4 +98,38 @@ function formatSize(float $size, int $times = 0)
         }
         return sprintf('%.2f', $size) . $unit;
     }
+}
+
+function getUrlCurl($url, $ua, $cookie){
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'GET',
+        CURLOPT_COOKIE => $cookie,
+        CURLOPT_HTTPHEADER => [
+            'User-Agent: '.$ua,
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Encoding: gzip, deflate, br, zstd',
+            'Cache-Control: max-age=0',
+            'sec-ch-ua: "Microsoft Edge";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
+            'sec-ch-ua-mobile: ?0',
+            'sec-ch-ua-platform: "Windows"',
+            'Upgrade-Insecure-Requests: 1',
+            'Sec-Fetch-Site: none',
+            'Sec-Fetch-Mode: navigate',
+            'Sec-Fetch-User: ?1',
+            'Sec-Fetch-Dest: document',
+            'Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        ],
+    ]);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    $response = json_decode(curl_exec($curl), true);
+    curl_close($curl);
+    return $response;
 }

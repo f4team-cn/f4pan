@@ -6,7 +6,7 @@ use app\BaseController;
 use app\utils\CurlUtils;
 use think\App;
 
-//此方案废弃
+//此方案废弃x 含金量还在上升
 class WebApi extends BaseController
 {
 //    private $curl = null;

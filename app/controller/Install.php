@@ -120,7 +120,7 @@ class Install extends BaseController
        $redis_port = $redis_config['port'];
        $redis_pass = $redis_config['password']??'';
        $env = <<<EOF
-APP_VERSION = 1.1.0
+APP_VERSION = 1.1.1
 
 DEFAULT_LANG = zh-cn
 

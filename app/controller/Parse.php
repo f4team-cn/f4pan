@@ -30,12 +30,8 @@ class Parse extends BaseController
         $Svip_cookie = $Svip_cookie[$rand];
         $info = accountStatus($Svip_cookie);
         $Svip_id = $Svip_id[$rand];
-        $svip_localstate = array_column($Svip, 'local_state');
-        $svip_localstate = $svip_localstate[$rand];
-        $svip_access_token = array_column($Svip, 'access_token');
-        $svip_access_token = $svip_access_token[$rand];
         if($info) {
-            return [$Svip_cookie, $Svip_id, $svip_localstate, $svip_access_token];
+            return [$Svip_cookie, $Svip_id];
         }else{
             $SvipModel->updateSvip($Svip_id, ['state' => -1]);
             $model = new StatsModel();
@@ -134,35 +130,25 @@ class Parse extends BaseController
             $array  = self::transfer($cookie,$share_id,$uk,$fs_id,$randsk,$url);
             $to_fs_id = $array['to_fs_id'];
             $to_path = $array['to_path'];
-//            $to_path = rawurlencode($to_path);
-            if (!$to_fs_id){
+            if (!$to_path){
                 $model = new SvipModel();
                 $model->updateSvip($id, ['state' =>-1]);
                 return responseJson(-1, "转移文件失败");
             }
         }
-        $header = array(
-            "User-Agent: ". SystemModel::getUa(),
-        );
-//        $access_token = self::getAccessToken($cookie[2])["access_token"];
-        $access_token = $cookie[3];
-        $url = "https://pan.baidu.com/rest/2.0/xpan/multimedia?method=filemetas&dlink=1&fsids=%5B$to_fs_id%5D&access_token=$access_token";
-        $res = CurlUtils::header($header)->cookie($cookie[0])->get($url)->obj(true);
-        if($res['errno'] == 9019){
-            $access_token = getAccessToken($cookie[2], $cookie[1])["access_token"];
-            $url = "https://pan.baidu.com/rest/2.0/xpan/multimedia?method=filemetas&dlink=1&fsids=%5B$to_fs_id%5D&access_token=$access_token";
-            $res = CurlUtils::header($header)->cookie($cookie[0])->get($url)->obj(true);
-        }
-        $dlk = $res['list'][0]['dlink'];
-        $location = CurlUtils::ua(SystemModel::getUa())->cookie($cookie[0])->get($dlk)->head();
-        if(!isset($location['Location'])){
-            return responseJson(-1, "解析失败, 请重试");
-        }
-        $filename = $res["list"][0]["filename"];
-        $filectime = $res["list"][0]["server_ctime"];
-        $filemd5 = $res["list"][0]["md5"];
-        $filesize = $res["list"][0]["size"];
-        $realLink = $location['Location'][0];
+        $to_path = rawurlencode($to_path);
+        $url = "https://pcs.baidu.com/rest/2.0/pcs/file?method=locatedownload&app_id=250528&path=$to_path&ver=2&time=1676908121&rand=df142c666096ad54f9a9f2de21b02d37d9205722&devuid=O%7C0D9FD9F4941FF7A591BB2A8682D18629";
+        $res = getUrlCurl($url, SystemModel::getUa(), $cookie[0]);
+        $realLink = $res['urls'][0]['url'];
+        preg_match("/size=(\d+)/", $realLink, $pp);
+        $filesize = $pp[1];
+        preg_match("/&fin=(.+)&bflag/", $realLink, $pp);
+        $filename = $pp[1];
+        $filename = urldecode($filename);
+        preg_match("/\/file\/(.+)\?/", $realLink, $pp);
+        $filemd5 = $pp[1];
+        preg_match("/ctime=(\d+)/", $realLink, $pp);
+        $filectime = $pp[1];
         if ($realLink == "" or str_contains($realLink, "qdall01.baidupcs.com") or !str_contains($realLink, 'tsl=0')) {
             $model = new SvipModel();
             $model->updateSvip($cookie[1], array('state' => -1));
@@ -236,6 +222,11 @@ class Parse extends BaseController
             $model = new SvipModel();
             $model->updateSvip($cookie[1], array('state' => -1));
             return array('to_path'=>null,'to_fs_id'=>null,'cookie'=>$cookie);;
+        }
+        if($res['errno'] != 0){
+            $to_path = $res['extra']['list'][0]['to'];
+            $to_fs_id = $res['extra']['list'][0]['to_fs_id'];
+            return array('to_path'=>$to_path,'to_fs_id'=>$to_fs_id,'cookie'=>$cookie);;
         }
         $to_path = $res['extra']['list'][0]['to'];
         $to_fs_id = $res['extra']['list'][0]['to_fs_id'];
