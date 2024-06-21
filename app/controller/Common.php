@@ -25,6 +25,7 @@ class Common extends BaseController
         $system = $active->toArray();
         unset($system[0]["normal_cookie"]);
         unset($system[0]["admin_password"]);
+        unset($system[0]["fixed_key"]);
         return responseJson(1, '获.取.了.', $system[0]);
     }
 
