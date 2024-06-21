@@ -83,7 +83,7 @@ class Parse extends BaseController
         $seckey = str_replace("-", "+", $seckey);
         $seckey = str_replace("~", "=", $seckey);
         $seckey = str_replace("_", "/", $seckey);
-        return responseJson(200, "获取成功", array('data'=>$array,'shareinfo'=>array('share_id'=>$share_id,'uk'=>$uk,'seckey'=>$seckey)));
+        return responseJson(200, "获取成功", array('list'=>$array,'shareinfo'=>array('share_id'=>$share_id,'uk'=>$uk,'seckey'=>$seckey)));
     }
 
 
