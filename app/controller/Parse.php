@@ -113,7 +113,6 @@ class Parse extends BaseController
         if (!$cookie){
             return responseJson(-1, "获取svip失败, 请重试");
         }
-        /*
         if(!self::checkDir($cookie[0])){
             if(!self::createNewDir($cookie[0])){
                 return json_encode(array("code"=>-1, "msg"=>"创建文件夹失败"),456);
@@ -138,41 +137,10 @@ class Parse extends BaseController
             }
         }
         $to_path = rawurlencode($to_path);
-        */
-        $tpl = $this->getSign($share_id, $uk);
-        $sign = $tpl["data"]["sign"];
-        $ts = $tpl["data"]["timestamp"];
-        $header = array(
-            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.514.1919.810 Safari/537.36",
-            "Referer: https://pan.baidu.com/disk/home",
-            "Content-Type:application/x-www-form-urlencoded",
-            "Origin:https://pan.baidu.com"
-        ); 
-        $url = "https://pan.baidu.com/api/sharedownload?app_id=250528&channel=chunlei&clienttype=0&sign={$sign}&timestamp={$ts}&web=1";
-        $randsk = str_replace("+", "-", $randsk);
-        $randsk = str_replace("=", "~", $randsk);
-        $randsk = str_replace("/", "_", $randsk);
-        $data = [ 'encrypt' => '0', 'extra' => urlencode('{"sekey":"' . $randsk . '"}'), 'fid_list' => "[".$fs_id."]", 'primaryid' => $share_id, 'uk' => $uk, 'product' => 'share', 'type' => 'nolimit'];
-        $data = urldecode(http_build_query($data, '', '&', PHP_QUERY_RFC3986));
-        $result = CurlUtils::header($header)->cookie(SystemModel::getNormalCookie())->post($url, $data)->obj(true);
-        $filename = $result["list"][0]["server_filename"];
-        $filectime = $result["list"][0]["server_ctime"];
-        $filemd5 = $result["list"][0]["md5"];
-        $filesize = $result["list"][0]["size"];
-        $url = $result["list"][0]["dlink"];
-        $parse_url = parse_url($url);
-        parse_str($parse_url['query'],$param);
-        $md5 = substr($parse_url["path"], 6);
-        $fid = $param["fid"];
-        $dstime = $param["dstime"];
-        $sign = $param["sign"];
-        $shareid = $param["shareid"];
-        $vuk = $param["vuk"];
-        //$url = "https://pcs.baidu.com/rest/2.0/pcs/file?method=locatedownload&app_id=250528&path=$to_path&ver=2&time=1676908121&rand=df142c666096ad54f9a9f2de21b02d37d9205722&devuid=O%7C0D9FD9F4941FF7A591BB2A8682D18629";
-        $url = "https://d.pcs.baidu.com/rest/2.0/pcs/file?app_id=250528&method=locatedownload&check_blue=1&es=1&esl=1&path=$md5&fid=$fid&dstime=$dstime&rt=sh&sign=$sign&expires=1h&chkv=1&chkbd=0&chkpc=et&shareid=$shareid&resvsflag=1-0-0-1-1-1&vuk=$vuk&file_type=0&clienttype=0&ver=4.0&dtype=1&err_ver=1.0&ehps=0&open_pflag=0&clienttype=8&channel=00000000000000000000000000000000&version=7.42.0.5&devuid=BDIMXV2%2DO%5FE1BC199A564F44818870DD28C7AE6E54%2DC%5F0%2DD%5F09302220P0468%2DM%5F00E04C880370%2DV%5F3A7D2321&rand=d8e634a737caa8dc6f49aa53d7e5ec6c588a7069&time=1718972176&rand2=62ae20c745ac880846c2234d18094f76911770ea&vip=2&wp_retry_num=2&dpkg=1&sd=0";
+        $url = "https://pcs.baidu.com/rest/2.0/pcs/file?method=locatedownload&app_id=250528&path=$to_path&ver=2&time=1676908121&rand=df142c666096ad54f9a9f2de21b02d37d9205722&devuid=O%7C0D9FD9F4941FF7A591BB2A8682D18629";
         $res = getUrlCurl($url, SystemModel::getUa(), $cookie[0]);
         $realLink = $res['urls'][0]['url'];
-        /*
+        
         preg_match("/size=(\d+)/", $realLink, $pp);
         $filesize = $pp[1];
         preg_match("/&fin=(.+)&bflag/", $realLink, $pp);
@@ -182,7 +150,7 @@ class Parse extends BaseController
         $filemd5 = $pp[1];
         preg_match("/ctime=(\d+)/", $realLink, $pp);
         $filectime = $pp[1];
-        */
+        
         if ($realLink == "" or str_contains($realLink, "qdall01.baidupcs.com") or !str_contains($realLink, 'tsl=0')) {
             $model = new SvipModel();
             $model->updateSvip($cookie[1], array('state' => -1));
