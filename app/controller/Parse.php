@@ -62,7 +62,7 @@ class Parse extends BaseController
         );
         $result = CurlUtils::header($header)->cookie(SystemModel::getNormalCookie())->post($url, $data)->obj(true);
         if ($result['errno'] != "0"){
-            return json_encode(array('code'=>-1,'msg'=>'链接错误,请检查链接是否有效'),456);
+            return responseJson(-1, '链接错误,请检查链接是否有效');
         }
         foreach ($result['data']['list'] as $va){
             $filename = $va['server_filename'];
@@ -115,7 +115,7 @@ class Parse extends BaseController
         }
         if(!self::checkDir($cookie[0])){
             if(!self::createNewDir($cookie[0])){
-                return json_encode(array("code"=>-1, "msg"=>"创建文件夹失败"),456);
+                return responseJson(-1, "创建文件夹失败");
             };
         }
         $url = 'https://pan.baidu.com/s/'.$surl;
