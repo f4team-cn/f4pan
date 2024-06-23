@@ -26,7 +26,7 @@ class Common extends BaseController
         unset($system[0]["normal_cookie"]);
         unset($system[0]["admin_password"]);
         unset($system[0]["fixed_key"]);
-        return responseJson(1, '获.取.了.', $system[0]);
+        return responseJson(200, '获.取.了.', $system[0]);
     }
 
     public function getNotice()
@@ -39,7 +39,7 @@ class Common extends BaseController
             return responseJson(-1, '未.设.置.');
         }
         $notice = $model->getNoticeById($active['notice_id']);
-        return responseJson(1, '获.取.了.', $notice);
+        return responseJson(200, '获.取.了.', $notice);
     }
 
     public function getParseKey(){
@@ -55,7 +55,7 @@ class Common extends BaseController
             $redis = \think\facade\Cache::store('redis');
             $redis->set($key, $apikey, $system['key_last_time']);
             $apikey_model->where('key', $apikey)->update(['use_count' => $apikey_model->where('key', $apikey)->value('use_count') + 1]);
-            return responseJson(1, '获.取.了.', substr($key, -6));
+            return responseJson(200, '获.取.了.', substr($key, -6));
         }
         return responseJson(-1, '未.查.到.K.E.Y.');
     }
@@ -71,9 +71,9 @@ class Common extends BaseController
                 return responseJson(-1, '未.传.递.参.数.');
             }
             $req_id = randomKey("f4pan_req_id_");
-            $redis->set($req_id, $surl . '|' . $pwd, 300);
+            $redis->set($req_id, $surl . '|' . $pwd, \think\facade\App::isDebug() ? 60 * 60 * 12 : 300);
             $redis->delete('f4pan_parse_key_' . $parse_key);
-            return responseJson(1, '已.使.用.K.E.Y.', $req_id);
+            return responseJson(200, '已.使.用.K.E.Y.', $req_id);
         }
         return responseJson(-1, '未.查.到.K.E.Y.');
     }
