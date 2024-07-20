@@ -191,7 +191,8 @@ class Admin extends BaseController
         if (!$status) {
             return responseJson(-1, "添.加.失.败");
         }
-        return responseJson(1, "添.加.了.", $data);
+        $id = $model->id;
+        return responseJson(1, "添.加.了.", ["id"=>$id]+$data);
     }
 
     public function updateSystem(){
@@ -212,7 +213,7 @@ class Admin extends BaseController
         ];
         $status = $model->updateSystem($id , $data);
         if(!$status){
-            return responseJson(-1,"不.存.在");
+            return responseJson(-1,"没有变更内容");
         }
         return responseJson(1,"更.新.了.", $data);
     }
