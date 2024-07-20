@@ -20,6 +20,16 @@ class SvipModel extends Model
         return $this->where('state', '0')->where('svip_end_time', '>', time())->select();
     }
 
+    /** 获取所有账号
+     * @return SvipModel[]|array|\think\Collection
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function getAllList(){
+        return $this->select();
+    }
+
     /** 根据id获取SVIP信息
      * @param int $id
      * @return array|mixed
