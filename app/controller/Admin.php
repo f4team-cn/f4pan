@@ -102,6 +102,19 @@ class Admin extends BaseController
         return responseJson(1 , '获取成功' , $data);
     }
 
+    public function getAllList(){
+        $model = new SvipModel();
+        $data = $model->getAllList();
+        foreach ($data as $k=>$va){
+            $can_use = true;
+            if($va['state'] != 0 || $va['svip_end_time'] < time()){
+                $can_use = false;
+            }
+            $va['can_use'] = $can_use;
+        }
+        return responseJson(1 , '获取成功' , $data);
+    }
+
     public function getAllNotice(){
         $model = new NoticeModel();
         return responseJson(1 , '获取成功' , $model->getAllNotice());
