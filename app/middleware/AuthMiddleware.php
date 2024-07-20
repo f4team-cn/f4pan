@@ -9,19 +9,19 @@ class AuthMiddleware
     {
         $token = $request->header('Authorization');
         if(empty($token)){
-            return responseJson(-1 , '请进行管理员登录');
+            return responseJson(401 , '请进行管理员登录');
         }else{
             $res = JWTUtils::getPayloadAndVerify($token);
             if($res === 1){
-                return responseJson(-1 , '请进行管理员登录');
+                return responseJson(401 , '请进行管理员登录');
             }elseif($res === 2){
-                return responseJson(-1 , '请进行管理员登录');
+                return responseJson(401 , '请进行管理员登录');
             }elseif($res === 3){
-                return responseJson(-1 , '您的登录过期');
+                return responseJson(401 , '您的登录过期');
             }elseif($res === 4){
-               return responseJson(-1 , '您的登录过期');
+               return responseJson(401 , '您的登录过期');
            }elseif($res === 5){
-                return responseJson(-1 , '您的登录过期');
+                return responseJson(401 , '您的登录过期');
             }
             $request->login = $res;
             return $next($request);
