@@ -26,6 +26,7 @@ Route::group('api', function () {
             Route::post('delete', '\\app\\controller\\Admin@deleteSvip');
             Route::post('update', '\\app\\controller\\Admin@updateSvip');
             Route::get('list', '\\app\\controller\\Admin@getSvipList');
+            Route::get('all', '\\app\\controller\\Admin@getAllList');
         })->middleware(['auth']);
         // 公告管理
         Route::group('notices', function () {
