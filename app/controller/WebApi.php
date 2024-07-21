@@ -26,6 +26,9 @@ class WebApi extends BaseController
     }
     public function unicast(){
         $sign = $this->request->request('sign');
+        if(!$sign){
+            return responseJson(-1, '无sign传入');
+        }
         $url = "https://passport.baidu.com/channel/unicast?channel_id=".$sign."&gid=9B53B82-019B-47C2-AA3E-9D5D9D10F1E5&tpl=netdisk&_sdkFrom=1&apiver=v3&tt=1714656808250&_=1714656808250";
         $data = CurlUtils::timeout(60)->get($url)->obj(true);
 //        var_dump($data);
