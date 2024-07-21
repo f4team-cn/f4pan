@@ -63,18 +63,38 @@ class Common extends BaseController
     public function useParseKey(){
         $parse_key = $this->request->param('parse_key');
         $redis = \think\facade\Cache::store('redis');
-        if ($redis->has('f4pan_parse_key_' . $parse_key)) {
-            $redis->delete($parse_key);
-            $surl = $this->request->param('surl');
-            $pwd = $this->request->param('pwd');
-            if (empty($surl) || empty($pwd)) {
-                return responseJson(-1, '未.传.递.参.数.');
+        $model = new SystemModel();
+        $system = $model->getAchieve()->toArray()[0];
+        $surl = $this->request->param('surl');
+        $pwd = $this->request->param('pwd');
+        if (empty($surl) || empty($pwd)) {
+            return responseJson(-1, '未传递参数');
+        }
+        if ($system['requires_key'] == 'dynamic') {
+            if ($redis->has('f4pan_parse_key_' . $parse_key)) {
+                $redis->delete($parse_key);
+                $req_id = randomKey("f4pan_req_id_");
+                $redis->set($req_id, $surl . '|' . $pwd, \think\facade\App::isDebug() ? 60 * 60 * 12 : 300);
+                $redis->delete('f4pan_parse_key_' . $parse_key);
+                return responseJson(200, '已使用KEY', $req_id);
             }
+            return responseJson(-1, '未查到KEY');
+        }elseif ($system['requires_key'] == 'fixed'){
+            $key = $system['fixed_key'];
+            if($key == $parse_key){
+                $req_id = randomKey("f4pan_req_id_");
+                $redis->set($req_id, $surl . '|' . $pwd, \think\facade\App::isDebug() ? 60 * 60 * 12 : 300);
+                $redis->delete('f4pan_parse_key_' . $parse_key);
+                return responseJson(200, '已使用KEY', $req_id);
+            }else{
+                return responseJson(-1, 'KEY错误');
+            }
+        }elseif ($system['requires_key'] == 'none'){
             $req_id = randomKey("f4pan_req_id_");
             $redis->set($req_id, $surl . '|' . $pwd, \think\facade\App::isDebug() ? 60 * 60 * 12 : 300);
             $redis->delete('f4pan_parse_key_' . $parse_key);
-            return responseJson(200, '已.使.用.K.E.Y.', $req_id);
+            return responseJson(200, '已生成req_id', $req_id);
         }
-        return responseJson(-1, '未.查.到.K.E.Y.');
+        return responseJson(-1, '未知错误');
     }
 }

@@ -1,79 +1,64 @@
-![](https://www.thinkphp.cn/uploads/images/20230630/300c856765af4d8ae758c503185f8739.png)
-
-ThinkPHP 8.0
-===============
-
-## 特性
-
-* 基于PHP`8.0+`重构
-* 升级`PSR`依赖
-* 依赖`think-orm`3.0版本
-* `6.0`/`6.1`无缝升级
+<p align="center">
+  <a href="https://www.f4team.cn/"><img src="https://file.yingyya.cn/f4team/logo-xhdpi.png" width="500" height="200" alt="nonebot"></a>
+</p>
 
 
-> ThinkPHP8.0的运行环境要求PHP8.0.0+
 
-现在开始，你可以使用官方提供的[ThinkChat](https://chat.topthink.com/)，让你在学习ThinkPHP的旅途中享受私人AI助理服务！
+***************************************
 
-![](https://www.topthink.com/uploads/assistant/20230630/4d1a3f0ad2958b49bb8189b7ef824cb0.png)
+<h2 align="center">
 
-## 文档
+`F4Pan`，是一个获取下载链接的工具
 
-[完全开发手册](https://doc.thinkphp.cn)
+</h2>
 
-## 服务
 
-ThinkPHP生态服务由[顶想云](https://www.topthink.com)（TOPThink Cloud）提供，为生态提供专业的开发者服务和价值之选。
+## ⚠ 免责声明
+* `F4Pan`(下称本项目)使用的接口全部来自于官方，无任何破坏接口的行为<br>
+* 本项目所有代码全部开源，仅供学习参考使用，请遵守相关的法律法规，禁止商用，若无视声明使用此项目所造成的一切后果均与作者无关<br>
+* 本项目需要登录账号，具有一定风险，包括但不限于限速，封号，限制相关功能等<br>
+* 本项目，包括其开发者、贡献者和附属个人或实体，特此明确否认与任何形式的非法行为有任何关联、支持或认可。本免责声明适用于可能违反地方、国家或国际法律、法规或道德准则的F4Pan项目的任何使用或应用。<br>
+* 本项目是一个开源软件项目，旨在促进其预期用例中的合法和道德应用程序。每个用户都有责任确保其使用F4Pan符合其管辖范围内的所有适用法律和法规。<br>
+* 对于用户违反法律或从事任何形式的非法活动的任何行为，本项目的开发者和贡献者不承担任何责任。用户对自己的行为和使用F4Pan可能产生的任何后果负全部责任。<br>
+* 此外，本项目(包括其开发人员、贡献者和用户)提供的任何讨论、建议或指导都不应被解释为法律建议。强烈建议用户寻求独立的法律顾问，以了解其行为的法律影响，并确保遵守有关的法律和条例。<br>
+* 通过使用或访问本项目，用户承认并同意免除开发人员、贡献者和附属个人或实体因使用或滥用该项目而产生的任何和所有责任，包括因其行为而产生的任何法律后果。<br>
+* 请负责任地、依法使用本项目。
 
-## 赞助
-全新的[赞助计划](https://www.thinkphp.cn/sponsor)可以让你通过我们的网站、手册、欢迎页及GIT仓库获得巨大曝光，同时提升企业的品牌声誉，也更好保障ThinkPHP的可持续发展。
 
-[![](https://www.thinkphp.cn/uploads/images/20230630/48396092a0515886a3da6bd268131c8f.png)](http://github.crmeb.net/u/TPSY)
+## 🚧 所需环境
+* PHP >= 8.0
+* Mysql
+* Redis
+* Curl
+  <br>⚠ 安装Mysql与Redis后若还未通过环境检查请在对应版本的`php.ini`中启用对应的拓展
 
-[![](https://www.thinkphp.cn/uploads/images/20230630/a12bd248beee0e7491dd0f79dc4dd5e9.png)](https://www.thinkphp.cn/sponsor)
 
-[![](https://www.thinkphp.cn/uploads/images/20230630/e7f48d909d41dd5ebaf4a5aa982d0455.png)](https://www.thinkphp.cn/sponsor)
+## 🔧 安装
 
-## 安装
+本项目使用了`thinkphp8.0`框架<br>
+Nginx伪静态:
+```
+location ~* (runtime|application)/{
+	return 403;
+}
+location / {
+	if (!-e $request_filename){
+		rewrite  ^(.*)$  /index.php?s=$1  last;   break;
+	}
+}
+```
+### 🔧 手动构建
+本项目`前后端分离`的架构<br>
+可从`Releases`页面下载完整包<br>
 
-~~~
-composer create-project topthink/think tp
-~~~
+1. 解压到网站目录下
+2. 设置运行目录为`/public`
+3. 设置伪静态
+4. 访问网站跟随引导进行安装
 
-启动服务
+## ✔️ 反馈
+### 欢迎提交BUG
+可通过`Issues`或 [Telegram](https://t.me/f4pan_project) 与我们取得联系
 
-~~~
-cd tp
-php think run
-~~~
-
-然后就可以在浏览器中访问
-
-~~~
-http://localhost:8000
-~~~
-
-如果需要更新框架使用
-~~~
-composer update topthink/framework
-~~~
-
-## 命名规范
-
-`ThinkPHP`遵循PSR-2命名规范和PSR-4自动加载规范。
-
-## 参与开发
-
-直接提交PR或者Issue即可
-
-## 版权信息
-
-ThinkPHP遵循Apache2开源协议发布，并提供免费使用。
-
-本项目包含的第三方源码和二进制文件之版权信息另行标注。
-
-版权所有Copyright © 2006-2023 by ThinkPHP (http://thinkphp.cn) All rights reserved。
-
-ThinkPHP® 商标和著作权所有者为上海顶想信息科技有限公司。
-
-更多细节参阅 [LICENSE.txt](LICENSE.txt)
+# ©️ 最终解释权归F4Team所有
+进入我们的[官网](https://www.f4team.cn/)

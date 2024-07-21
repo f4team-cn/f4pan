@@ -10,22 +10,21 @@ class Install extends BaseController
 {
     public function checkEnv(){
         //php版本要求大于8.0
-        $php_version = version_compare(phpversion(), '8.1', '>=');
+        $php_version = version_compare(phpversion(), '8.0', '>=');
         $ext_check['php_version'] = phpversion();
-        if (!$php_version){
-            return responseJson(-1 , 'PHP版本要求大于8.0');
-        }
+
         //检查所需环境
         $ext = [
             'pdo_mysql',
             'redis',
+            'curl'
         ];
         foreach ($ext as $v){
             $ext_check['ext'][$v] = extension_loaded($v);
         }
         //如果环境检查有一项不通过则返回错误
         foreach ($ext_check['ext'] as $k=>$v){
-            if (!$v){
+            if (!$v || !$php_version){
                 return responseJson(-1 , '环境检查未通过', $ext_check);
             }
         }

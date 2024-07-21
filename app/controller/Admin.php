@@ -87,8 +87,10 @@ class Admin extends BaseController
         if(empty($id)){
             return responseJson(-1 , 'id不能为空');
         }
+        $state = $model->getSvipById($id);
+        $state = $state == 0 ? -1 : 0;
         $status = $model->updateSvip($id , [
-            'state'=>$this->request->param('state')
+            'state'=>$state
         ]);
         if(!$status){
             return responseJson(-1,"不.存.在");
@@ -111,6 +113,7 @@ class Admin extends BaseController
                 $can_use = false;
             }
             $va['can_use'] = $can_use;
+            $va['show_msg'] = $can_use ? '可用' : ($va['state'] != 0 ? "限速" : '过期');
         }
         return responseJson(1 , '获取成功' , $data);
     }
