@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.f4team.cn/"><img src="https://file.yingyya.cn/f4team/logo-xhdpi.png" width="500" height="200" alt="nonebot"></a>
+  <a href="https://www.f4team.cn/"><img src="https://www.f4team.cn/logo/logo-hdpi.png" width="500" height="200" alt="nonebot"></a>
 </p>
 
 
