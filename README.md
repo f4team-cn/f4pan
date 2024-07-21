@@ -36,7 +36,7 @@
 ## 🔧 安装
 
 本项目使用了`thinkphp8.0`框架<br>
-Nginx伪静态:
+Nginx伪静态（单独部署后端）:
 ```
 location ~* (runtime|application)/{
 	return 403;
@@ -45,6 +45,19 @@ location / {
 	if (!-e $request_filename){
 		rewrite  ^(.*)$  /index.php?s=$1  last;   break;
 	}
+}
+```
+Nginx伪静态（前端+后端）:
+```
+location ~* (runtime|application)/{
+    return 403;
+}
+location /api {
+    rewrite  ^(.*)$  /index.php?s=$1  last;   break;
+}
+location / {
+    index index.html;
+    try_files $uri $uri/ /index.html;
 }
 ```
 ### 🔧 手动构建
