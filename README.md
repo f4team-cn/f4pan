@@ -73,5 +73,10 @@ location / {
 ### 欢迎提交BUG
 可通过`Issues`或 [Telegram](https://t.me/f4pan_project) 与我们取得联系
 
+## 🔗 相关仓库
+前端 [f4pan-web](https://github.com/f4team-cn/f4pan-web)
+
+后端 [f4pan](￶https://github.com/f4team-cn/f4pan)
+
 # ©️ 最终解释权归F4Team所有
 进入我们的[官网](https://www.f4team.cn/)
