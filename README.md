@@ -72,8 +72,10 @@ location / {
 ## ⚠️ Tips
 动态密钥获取方法:
 前端暂时没有添加apikey的管理功能，如需使用请手动获取
-1. 带Authorization头部GET访问/api/admin/api_keys/generate获取apikey(此key用来生成动态解析密钥)
-2. GET访问/api/public/get_parse_key?apikey=第一步获取的apikey获取动态解析密钥
+
+1. 带`Authorization`头部GET访问`/api/admin/api_keys/generate`获取apikey(此key用来生成动态解析密钥)
+2. GET访问`/api/public/get_parse_key?apikey=第一步获取的apikey`获取动态解析密钥
+
 后续版本中功能会陆续完善
 
 ## ✔️ 反馈
