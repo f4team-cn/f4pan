@@ -69,6 +69,13 @@ location / {
 3. 设置伪静态
 4. 访问`http(s)://你的域名/#/install`跟随引导进行安装
 
+## ⚠️ Tips
+动态密钥获取方法:
+前端暂时没有添加apikey的管理功能，如需使用请手动获取
+1. 带Authorization头部GET访问/api/admin/api_keys/generate获取apikey(此key用来生成动态解析密钥)
+2. GET访问/api/public/get_parse_key?apikey=第一步获取的apikey获取动态解析密钥
+后续版本中功能会陆续完善
+
 ## ✔️ 反馈
 ### 欢迎提交BUG
 可通过`Issues`或 [Telegram](https://t.me/f4pan_project) 与我们取得联系
