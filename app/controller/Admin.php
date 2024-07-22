@@ -87,8 +87,8 @@ class Admin extends BaseController
         if(empty($id)){
             return responseJson(-1 , 'id不能为空');
         }
-        $state = $model->getSvipById($id);
-        $state = $state == 0 ? -1 : 0;
+        $state = $model->getSvipById($id)->toArray();
+        $state = $state["state"] == 0 ? -1 : 0;
         $status = $model->updateSvip($id , [
             'state'=>$state
         ]);
