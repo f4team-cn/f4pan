@@ -126,6 +126,12 @@ class Parse extends BaseController
             $id = $cookie[1];
             $model = new SvipModel();
             $model->updateSvip($id, ['state' =>-1]);
+            $model_ = new StatsModel();
+            $model_->addSpentSvipCount();
+            $cookie = $this->getRandomSvipCookie();
+            if(!$cookie){
+                return responseJson(-1, "获取svip失败");
+            }
             $cookie = $this->getRandomSvipCookie();
             $array  = self::transfer($cookie,$share_id,$uk,$fs_id,$randsk,$url);
             $to_fs_id = $array['to_fs_id'];
