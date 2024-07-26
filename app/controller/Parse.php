@@ -209,8 +209,8 @@ class Parse extends BaseController
     public static function transfer($cookie, $shareid, $from, $fsid, $randsk, $shareurl){
         $bdstoken = CurlUtils::cookie($cookie[0])->get("https://pan.baidu.com/api/gettemplatevariable?clienttype=0&app_id=250528&web=1&fields=[%22bdstoken%22,%22token%22,%22uk%22,%22isdocuser%22,%22servertime%22]")->obj(true);
         $bdstoken = $bdstoken['result']['bdstoken'];
-        $url = "https://pan.baidu.com/share/transfer?shareid=$shareid&from=$from&channel=chunlei&seckey=$randsk&ondup=newcopy&web=1&app_id=250528&bdstoken=$bdstoken&logid=QTU4NjczRTM3OEFDNkI1NUQ0QzExQ0VFOEY5M0VGREQ6Rkc9MQ==&clienttype=0";
         $randsk = urlencode($randsk);
+        $url = "https://pan.baidu.com/share/transfer?shareid=$shareid&from=$from&channel=chunlei&sekey=$randsk&ondup=newcopy&web=1&app_id=250528&bdstoken=$bdstoken&logid=QTU4NjczRTM3OEFDNkI1NUQ0QzExQ0VFOEY5M0VGREQ6Rkc9MQ==&clienttype=0";
         $cookie[0] .= ";BDCLND=$randsk";
         $header =
             [
