@@ -18,6 +18,7 @@ Route::group('api', function () {
         // API密钥管理
         Route::group('api_keys', function () {
             Route::get('generate', '\\app\\controller\\Admin@generateApiKey');
+            Route::get('delete', '\\app\\controller\\Admin@deleteApiKey');
             Route::get('', '\\app\\controller\\Admin@getApiKey');
         })->middleware(['auth']);
         // SVIP管理

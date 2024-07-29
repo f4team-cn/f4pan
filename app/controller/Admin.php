@@ -40,6 +40,19 @@ class Admin extends BaseController
         return responseJson(1 , '生成成功' , ['key'=>$key]);
     }
 
+    public function deleteApiKey(){
+        $model = new ApiKeyModel();
+        $id = $this->request->param('id');
+        if (empty($id)){
+            return responseJson(-1 , 'id不能为空');
+        }
+        $status = $model->deleteApiKey($id);
+        if(!$status){
+            return responseJson(-1, "不存在或删除失败");
+        }
+        return responseJson(1 , '删除成功');
+    }
+
     public function getApiKey(){
         $model = new ApiKeyModel();
         $data = $model->getAllApiKeys();

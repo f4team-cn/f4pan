@@ -17,7 +17,7 @@ class ApiKeyModel extends Model
         return $this->select();
     }
 
-    public function deliteApiKey(int $id){
+    public function deleteApiKey(int $id){
         return $this->where('id', $id)->delete();
     }
 
