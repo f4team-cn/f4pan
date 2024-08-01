@@ -71,7 +71,7 @@ class Parse extends BaseController
             $md5 = $va['md5']??"";
             $fs_id = $va['fs_id'];
             $isdir = $va['isdir'];
-            $size = $va['size'];
+            $size = (int)$va['size'];
             $array[] = array('filename'=>$filename,'ctime'=>$ctime,'path'=>$path,'md5'=>$md5,'fs_id'=>$fs_id,'isdir'=>$isdir,'size'=>$size);
         }
         if(!$array){
