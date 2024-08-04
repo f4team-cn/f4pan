@@ -37,9 +37,8 @@ function randomNumKey(string $text = 'f4pan_parse_key_'){
 //}
 
 function accountStatus(string $cookie, $localstate=null){
-    $url = "https://pan.baidu.com/api/gettemplatevariable?channel=chunlei&web=1&app_id=250528&clienttype=0";
-    $data = "fields=[%22username%22,%22loginstate%22,%22is_vip%22,%22is_svip%22,%22is_evip%22]";
-    $result = CurlUtils::ua('pc')->cookie($cookie)->post($url, $data)->obj(true);
+    $url = "https://pan.baidu.com/api/gettemplatevariable?channel=chunlei&web=1&app_id=250528&clienttype=0&fields=[%22username%22,%22loginstate%22,%22is_vip%22,%22is_svip%22,%22is_evip%22]";
+    $result = CurlUtils::ua('pc')->cookie($cookie)->get($url)->obj(true);
     if($result['errno'] == -6){
         return false;
     }
