@@ -67,7 +67,7 @@ class Common extends BaseController
         $system = $model->getAchieve()->toArray()[0];
         $surl = $this->request->param('surl');
         $pwd = $this->request->param('pwd');
-        if (empty($surl) || empty($pwd)) {
+        if (empty($surl)) {
             return responseJson(-1, '未传递参数');
         }
         if ($system['requires_key'] == 'dynamic') {
