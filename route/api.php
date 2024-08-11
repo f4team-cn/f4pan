@@ -65,5 +65,10 @@ Route::group('api', function () {
         Route::get('qrcode_login', '\\app\\controller\\WebApi@qrcodeLogin');
     });
 })->middleware('visit');
+if (\think\facade\Env::get('OFFICIAL_DOCKER') == true) {
+    Route::get('/', function () {
+        return file_get_contents(app()->getRootPath() . 'public/index.html');
+    });
+}
 Route::import(['route/install']);
 Route::miss('\\app\\controller\\Error@index');
