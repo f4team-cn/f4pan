@@ -21,7 +21,7 @@ CREATE TABLE `system` (
     `fixed_key` VARCHAR(255) NULL COMMENT '固定的密钥值（如果动态密钥禁用）',
     `real_url_last_time` INT DEFAULT 1800 COMMENT '真实链接存储时间（秒）',
     `parse_ua` VARCHAR(255) NULL COMMENT '解析时使用的UA',
-    `normal_cookie` VARCHAR(2048) NULL COMMENT '普通Cookie',
+    `normal_cookie` TEXT NULL COMMENT '普通Cookie',
     `is_active` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '是否为当前活动配置',
     PRIMARY KEY (`id`)
 );
