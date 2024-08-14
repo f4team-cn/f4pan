@@ -30,7 +30,7 @@
 * Mysql
 * Redis
 * Curl
-  <br>⚠ 安装Mysql与Redis后若还未通过环境检查请在对应版本的`php.ini`中启用对应的拓展
+  <br>⚠ 安装Mysql与Redis后若还未通过环境检查请在对应版本的`php.ini`中启用对应的拓展，需要的PHP拓展有`fileinfo`和`redis`
 
 
 ## 🔧 安装
@@ -70,10 +70,16 @@ location / {
 4. 设置伪静态
 5. 访问`http(s)://你的域名/#/install`跟随引导进行安装
 
+如果使用`宝塔面板`进行安装，在执行`composer install`前应去`禁用函数`页面删除`putenv`和`proc_open`函数
+
 ## ⚠️ Tips
 动态密钥获取方法:
 1. 登录后台，进入apikey管理页面，新增一个apikey
 2. GET访问`/api/public/get_parse_key?apikey={apikey}`获取动态解析密钥
+
+## 📦 前端更新方法
+前往[f4pan-web](https://github.com/f4team-cn/f4pan-web)仓库的`actions`页面下载最新的构建版本
+解压到`public`文件夹下更新
 
 ## ✔️ 反馈
 ### 欢迎提交BUG
