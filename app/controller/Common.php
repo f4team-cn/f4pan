@@ -20,6 +20,9 @@ class Common extends BaseController
 
     public function getSystem()
     {
+        if (!file_exists(app()->getRootPath() . 'install.lock')){
+           return responseJson(-1 , '系统还未安装');
+        }
         $model = new SystemModel();
         $active = $model->getAchieve();
         $system = $active->toArray();
