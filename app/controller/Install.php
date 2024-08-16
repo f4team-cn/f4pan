@@ -102,7 +102,7 @@ class Install extends BaseController
             return responseJson(-1 , '数据库链接失败', $e->getMessage());
         }
         $redis_config = [
-            'host' => $this->request->param('redis_host')?? '127.0.0.1',
+            'host' => $this->request->param('redis_hostname')?? '127.0.0.1',
             'port' => $this->request->param('redis_port')?? 6379,
             'password' => $this->request->param('redis_password'),
         ];
