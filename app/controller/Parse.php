@@ -170,6 +170,7 @@ class Parse extends BaseController
             'filename' => $filename,
             'filectime' => $filectime,
             'filemd5' => $filemd5,
+            'filefsid' => (int)$fs_id,
             'filesize' => $filesize,
             'dlink' => $realLink,
             'ua' => SystemModel::getUa(),
