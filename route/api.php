@@ -7,6 +7,7 @@ Route::group('api', function () {
             Route::get('get_file_list', '\\app\\controller\\Parse@getFileList');
             Route::get('parse_file', '\\app\\controller\\Parse@parseFile');
         })->middleware('parse');
+        Route::get('s/<code>', '\\app\\controller\\Parse@shortUrlRedirect')->pattern(['code'=>'.*']);
     });
     //管理员系统
     //需要校验登录，中间件完成

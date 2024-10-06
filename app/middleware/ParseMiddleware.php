@@ -22,6 +22,7 @@ class ParseMiddleware
         $randsk = $request->request('randsk')??'';
         $share_id = $request->request('share_id')??'';
         $uk = $request->request('uk')??'';
+        $short = $request->request('short')??false;
         $request->surl = $surl;
         $request->password = $password;
         $request->isroot = $isRoot;
@@ -31,6 +32,7 @@ class ParseMiddleware
         $request->randsk = $randsk;
         $request->share_id = $share_id;
         $request->uk = $uk;
+        $request->short = $short;
         return $next($request);
     }
 }

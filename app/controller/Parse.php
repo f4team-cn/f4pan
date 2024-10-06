@@ -17,28 +17,30 @@ class Parse extends BaseController
         parent::__construct($app);
     }
 
-    private function getRandomSvipCookie(){
+    private function getRandomSvipCookie() {
         $SvipModel = new SvipModel();
-        $Svip = $SvipModel->getAllNormalSvips();
-        $Svip = $Svip->toArray();
-        if (!$Svip){
+        $Svips = $SvipModel->getAllNormalSvips()->toArray();
+        if (empty($Svips)) {
+            $Svips = $SvipModel->getAllList()->toArray();
+        }
+        if (empty($Svips)) {
             return false;
         }
-        $Svip_cookie = array_column($Svip, 'cookie');
-        $Svip_id = array_column($Svip, 'id');
-        $rand = array_rand($Svip);
-        $Svip_cookie = $Svip_cookie[$rand];
+        $randIndex = array_rand($Svips);
+        $Svip = $Svips[$randIndex];
+
+        $Svip_cookie = $Svip['cookie'];
+        $Svip_id = $Svip['id'];
         $info = accountStatus($Svip_cookie);
-        $Svip_id = $Svip_id[$rand];
-        if($info) {
+        if ($info) {
             return [$Svip_cookie, $Svip_id];
-        }else{
+        } else {
             $SvipModel->updateSvip($Svip_id, ['state' => -1]);
-            $model = new StatsModel();
-            $model->addSpentSvipCount();
+            (new StatsModel())->addSpentSvipCount();
             return false;
         }
     }
+
 
     private function getSign($share_id, $uk){
         $tplconfig = "https://pan.baidu.com/share/tplconfig?shareid={$share_id}&uk={$uk}&fields=sign,timestamp&channel=chunlei&web=1&app_id=250528&clienttype=0";
@@ -95,6 +97,7 @@ class Parse extends BaseController
         $share_id = $this->request->share_id;
         $uk = $this->request->uk;
         $surl = $this->request->surl;
+        $short = $this->request->short;
         if (
             empty($fs_id) ||
             empty($surl) ||
@@ -111,7 +114,7 @@ class Parse extends BaseController
         }
         $cookie = $this->getRandomSvipCookie();
         if (!$cookie){
-            return responseJson(-1, "获取svip失败, 请重试");
+            return responseJson(-1, "获取可用账号失败");
         }
         if(!self::checkDir($cookie[0])){
             if(!self::createNewDir($cookie[0])){
@@ -130,7 +133,7 @@ class Parse extends BaseController
             $model_->addSpentSvipCount();
             $cookie = $this->getRandomSvipCookie();
             if(!$cookie){
-                return responseJson(-1, "获取svip失败");
+                return responseJson(-1, "获取可用账号失败");
             }
             $cookie = $this->getRandomSvipCookie();
             $array  = self::transfer($cookie,$share_id,$uk,$fs_id,$randsk,$url);
@@ -139,7 +142,7 @@ class Parse extends BaseController
             if (!$to_path){
                 $model = new SvipModel();
                 $model->updateSvip($id, ['state' =>-1]);
-                return responseJson(-1, "转移文件失败");
+                return responseJson(-1, "转移文件失败，请检查解析账号可用空间\n暂不支持解析 解析账号分享的文件");
             }
         }
         $to_path = rawurlencode($to_path);
@@ -159,13 +162,16 @@ class Parse extends BaseController
         preg_match("/ctime=(\d+)/", $realLink, $pp);
         $filectime = $pp[1];
         
-        if ($realLink == "" or str_contains($realLink, "qdall01.baidupcs.com") or !str_contains($realLink, 'tsl=0')) {
+        if ($realLink == "" or str_contains($realLink, "qdall01.baidupcs.com")) {
             $model = new SvipModel();
             $model->updateSvip($cookie[1], array('state' => -1));
             $model = new StatsModel();
             $model->addSpentSvipCount();
+//            print_r($realLink);
             return responseJson(-1, "解析失败，可能账号已限速，请3s后重试,账号ID{$cookie[1]}");
         }
+
+        $realLink = is_true($short) ? self::createShortUrl($realLink, $surl, (int)$fs_id) : $realLink;
         $result = array(
             'filename' => $filename,
             'filectime' => $filectime,
@@ -183,9 +189,38 @@ class Parse extends BaseController
         $model = new StatsModel();
         $model->addParsingCount();
         $model->addTraffic($filesize);
+        //每日统计
+        $today = date('Y-m-d');
+        $redisKey = 'download_traffic_' . $today;
+        $currentFlow = $redis->get($redisKey);
+        if (!$currentFlow) {
+            $currentFlow = 0;
+        }
+        $newFlow = $currentFlow + $filesize;
+        $redis->set($redisKey, $newFlow, strtotime('tomorrow') - 1);
         return responseJson(200, "获取成功", $result);
     }
 
+    public function shortUrlRedirect(string $code)
+    {
+        $redis = \think\facade\Cache::store('redis');
+        $url = $redis->get("short_url_" . $code);
+        if ($url) {
+            return redirect($url);
+        } else {
+            return responseJson(-1, "短链接不存在或已过期", ['code'=>$code]);
+        }
+    }
+
+    private static function createShortUrl(string $url, string $surl, int $fsid): string
+    {
+        $redis = \think\facade\Cache::store('redis');
+        $shortCode = $surl . ':' . $fsid;
+        $model = new SystemModel();
+        $last_time = $model->getAchieve()->toArray()[0]['real_url_last_time'];
+        $redis->set("short_url_" . $shortCode, $url, $last_time);
+        return request()->domain() . '/api/v1/s/' . $shortCode;
+    }
 
     public static function checkDir($cookie){
         $url = 'https://pan.baidu.com/api/list?channel=chunlei&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&app_id=250528&dir=%2F&order=name&desc=0&start=0&limit=500&t=0.5963396759604782&channel=chunlei&web=1&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&logid=RENBODQ1MkY3Mzg4MEMzOUUzOTBCQ0JCRDM0NEYwMzY6Rkc9MQ==&clienttype=0&dp-logid=93935300557954940027';
@@ -234,10 +269,8 @@ class Parse extends BaseController
             $model->updateSvip($cookie[1], array('state' => -1));
             return array('to_path'=>null,'to_fs_id'=>null,'cookie'=>$cookie);;
         }
-        if($res['errno'] != 0){
-            $to_path = $res['extra']['list'][0]['to'];
-            $to_fs_id = $res['extra']['list'][0]['to_fs_id'];
-            return array('to_path'=>$to_path,'to_fs_id'=>$to_fs_id,'cookie'=>$cookie);;
+        if($res['errno'] == 2){
+            return array('to_path'=>null,'to_fs_id'=>null,'cookie'=>$cookie);;
         }
         $to_path = $res['extra']['list'][0]['to'];
         $to_fs_id = $res['extra']['list'][0]['to_fs_id'];

@@ -84,7 +84,7 @@ class Install extends BaseController
             'key_last_time' => $this->request->param('key_last_time') ?? 300,
             'fixed_key' => $this->request->param('fixed_key') ?? '',
             'real_url_last_time' => $this->request->param('real_url_last_time') ?? 1800,
-            'parse_ua' => $this->request->param('parse_ua') ?? 'netdisk',
+            'parse_ua' => $this->request->param('parse_ua') ?? 'netdisk;',
             'normal_cookie' => $this->request->param('normal_cookie') ?? '',
             'is_active' => true
         ];
@@ -119,7 +119,7 @@ class Install extends BaseController
         $redis_port = $redis_config['port'];
         $redis_pass = $redis_config['password']??'';
         $env = <<<EOF
-APP_VERSION = 1.1.3
+APP_VERSION = 1.2.0
 APP_DEBUG = false
 
 DEFAULT_LANG = zh-cn

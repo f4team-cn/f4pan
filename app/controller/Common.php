@@ -15,7 +15,16 @@ class Common extends BaseController
         $model = new StatsModel();
         $info = $model->where(1)->select()->toArray()[0];
         $format_size = formatSize($info['total_parsing_traffic']);
-        return responseJson(200, "success", $info+['total_parsing_traffic_format' => $format_size]);
+        $redis = \think\facade\Cache::store('redis');
+        $today = date('Y-m-d');
+        $redisKey = 'download_traffic_' . $today;
+        $todayFlow = $redis->get($redisKey);
+        if (!$todayFlow) {
+            $todayFlow = 0;
+        }
+        $info['total_parsing_traffic_format'] = $format_size;
+        $info['today_parsing_traffic_format'] = formatSize($todayFlow);
+        return responseJson(200, "success", $info);
     }
 
     public function getSystem()
