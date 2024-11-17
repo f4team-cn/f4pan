@@ -146,8 +146,12 @@ class Parse extends BaseController
             }
         }
         $to_path = rawurlencode($to_path);
-        $url = "https://pcs.baidu.com/rest/2.0/pcs/file?method=locatedownload&app_id=250528&path=$to_path&ver=2&time=1676908121&rand=df142c666096ad54f9a9f2de21b02d37d9205722&devuid=O%7C0D9FD9F4941FF7A591BB2A8682D18629";
+        $url = "https://pcs.baidu.com/rest/2.0/pcs/file?method=locatedownload&app_id=250528&path=$to_path&ver=2&time=1676908121&rand=df142c666096ad54f9a9f2de21b02d37d9205722&devuid=O%7C0D9FD9F4941FF7A591BB2A8682D18629&version=7.44.6.1";
         $res = getUrlCurl($url, SystemModel::getUa(), $cookie[0]);
+        if (!isset($res['urls'])) {
+            $msg = isset($res['errmsg']) ? $res['errmsg'] : '未知错误';
+            return responseJson(-1, $msg, $res);
+        }
         $realLink = $res['urls'][0]['url'];
         if (str_contains($realLink, "nd6.baidupcs.com") && count($res["urls"]) > 1){
             $realLink = $res['urls'][rand(1, count($res["urls"])-1)]['url'];
