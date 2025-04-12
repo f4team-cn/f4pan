@@ -66,6 +66,7 @@ class Parse extends BaseController
         if ($result['errno'] != "0"){
             return responseJson(-1, '链接错误,请检查链接是否有效');
         }
+        $array = [];
         foreach ($result['data']['list'] as $va){
             $filename = $va['server_filename'];
             $ctime = $va['server_ctime'];
