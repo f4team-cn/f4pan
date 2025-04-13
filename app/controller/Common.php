@@ -6,6 +6,7 @@ use app\BaseController;
 use app\model\ApiKeyModel;
 use app\model\NoticeModel;
 use app\model\StatsModel;
+use app\model\StatsDailyModel;
 use app\model\SystemModel;
 
 class Common extends BaseController
@@ -15,18 +16,30 @@ class Common extends BaseController
         $model = new StatsModel();
         $info = $model->where(1)->select()->toArray()[0];
         $format_size = formatSize($info['total_parsing_traffic']);
-        $redis = \think\facade\Cache::store('redis');
-        $today = date('Y-m-d');
-        $redisKey = 'download_traffic_' . $today;
-        $todayFlow = $redis->get($redisKey);
-        if (!$todayFlow) {
+        $stats = new StatsDailyModel();
+        $info_daily = $stats->getByDate(date('Y-m-d'))->toArray();
+        if (!$info_daily) {
             $todayFlow = 0;
+        }else{
+            $todayFlow = $info_daily["parsing_traffic"];
         }
         $info['total_parsing_traffic_format'] = $format_size;
         $info['today_parsing_traffic_format'] = formatSize($todayFlow);
+        $info["today"] = $info_daily;
         return responseJson(200, "success", $info);
     }
 
+    public function getPastDailyData(){
+        $past_days = $this->request->param('past_days');
+        if (empty($past_days)) {
+            return responseJson(-1, '未传递数据');
+        }
+        
+        $stats = new StatsDailyModel();
+        $info_daily = $stats->getPastDaysData($past_days);
+        return responseJson(200, "success", $info_daily);
+    }
+    
     public function getSystem()
     {
         if (!file_exists(app()->getRootPath() . 'install.lock')){

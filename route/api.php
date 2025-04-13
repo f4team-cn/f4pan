@@ -55,7 +55,7 @@ Route::group('api', function () {
     //公共接口
     Route::group('public', function () {
         Route::get('get_status', '\\app\\controller\\Common@getStatus');
-        //Route::get('get_past_daily_data', '\\app\\controller\\Common@getPastDailyData');
+        Route::get('get_past_daily_data', '\\app\\controller\\Common@getPastDailyData');
         Route::get('get_system', '\\app\\controller\\Common@getSystem');
         Route::get('get_notice', '\\app\\controller\\Common@getNotice');
         Route::get('get_parse_key', '\\app\\controller\\Common@getParseKey');

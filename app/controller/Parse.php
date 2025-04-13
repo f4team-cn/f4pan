@@ -4,6 +4,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\StatsModel;
+use app\model\StatsDailyModel;
 use app\model\SvipModel;
 use app\model\SystemModel;
 use app\utils\CurlUtils;
@@ -147,7 +148,7 @@ class Parse extends BaseController
             }
         }
         $to_path = rawurlencode($to_path);
-        $url = "https://pcs.baidu.com/rest/2.0/pcs/file?method=locatedownload&app_id=250528&path=$to_path&ver=2&time=1676908121&rand=df142c666096ad54f9a9f2de21b02d37d9205722&devuid=O%7C0D9FD9F4941FF7A591BB2A8682D18629&version=7.44.6.1";
+        $url = "https://d.pcs.baidu.com/rest/2.0/pcs/file?ant=1&apn_id=33_13&app_id=250528&channel=0&check_blue=1&clienttype=17&cuid=08E271F7046B366BE1BF9F1F30DF0689%7CVFZVYSRCU&deviceid=611777535803319847&devuid=08E271F7046B366BE1BF9F1F30DF0689%7CVFZVYSRCU&dtype=1&eck=1&ehps=1&err_ver=1.0&es=1&esl=1&freeisp=0&method=locatedownload&network_type=4G&path=$to_path&queryfree=0&rand=0854bec9ad10241680eb16aaf3e9ab3912f0f429&time=1744558717&use=0&ver=4.0&version=2.2.101.242&version_app=12.25.3&vip=0&psign=aa42ffc322b4c71d2f39e422aa83607e";
         $res = getUrlCurl($url, SystemModel::getUa(), $cookie[0]);
         if (!isset($res['urls'])) {
             $msg = isset($res['errmsg']) ? $res['errmsg'] : '未知错误';
@@ -157,6 +158,7 @@ class Parse extends BaseController
         if (str_contains($realLink, "nd6.baidupcs.com") && count($res["urls"]) > 1){
             $realLink = $res['urls'][rand(1, count($res["urls"])-1)]['url'];
         }
+        $realLink .= "&origin=dlna";
         preg_match("/size=(\d+)/", $realLink, $pp);
         $filesize = $pp[1];
         preg_match("/&fin=(.+)&bflag/", $realLink, $pp);
@@ -195,14 +197,9 @@ class Parse extends BaseController
         $model->addParsingCount();
         $model->addTraffic($filesize);
         //每日统计
-        $today = date('Y-m-d');
-        $redisKey = 'download_traffic_' . $today;
-        $currentFlow = $redis->get($redisKey);
-        if (!$currentFlow) {
-            $currentFlow = 0;
-        }
-        $newFlow = $currentFlow + $filesize;
-        $redis->set($redisKey, $newFlow, strtotime('tomorrow') - 1);
+        $stats = new StatsDailyModel();
+        $stats->addTraffic($filesize);
+        $stats->addParsingCount();
         return responseJson(200, "获取成功", $result);
     }
 

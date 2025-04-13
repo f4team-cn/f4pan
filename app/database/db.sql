@@ -56,4 +56,12 @@ CREATE TABLE `api_keys`(
     `key` VARCHAR(32) NOT NULL COMMENT 'API Key',
     `use_count` INT NOT NULL DEFAULT 0 COMMENT '使用次数',
     UNIQUE (`key`)
-)
+);
+
+CREATE TABLE `stats_daily` (
+    `stat_date` DATE NOT NULL COMMENT '统计日期',
+    `parsing_traffic` BIGINT NOT NULL DEFAULT 0 COMMENT '当日解析流量',
+    `parsing_count` INT NOT NULL DEFAULT 0 COMMENT '当日解析文件数',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`stat_date`)
+) ENGINE=InnoDB COMMENT='每日统计表';
