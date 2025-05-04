@@ -226,7 +226,8 @@ class Parse extends BaseController
 
     public static function checkDir($cookie){
         $url = 'https://pan.baidu.com/api/list?channel=chunlei&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&app_id=250528&dir=%2F&order=name&desc=0&start=0&limit=500&t=0.5963396759604782&channel=chunlei&web=1&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&logid=RENBODQ1MkY3Mzg4MEMzOUUzOTBCQ0JCRDM0NEYwMzY6Rkc9MQ==&clienttype=0&dp-logid=93935300557954940027';
-        $res = CurlUtils::cookie($cookie)->get($url)->obj(true);
+        $ua = "User-Agent: Mozilla/5.0 (Linux; Android 6.0.1; OPPO R9s Plus Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Mobile Safari/537.36";
+        $res = getUrlCurl($url, $ua, $cookie);
         foreach ($res['list'] as $k=>$va){
             if($va['path'] == "/parse_file" && $va['isdir'] == 1){
                 return true;
@@ -237,7 +238,9 @@ class Parse extends BaseController
 
     public static function createNewDir($cookie){
         $url = 'https://pan.baidu.com/api/create?a=commit&channel=chunlei&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&app_id=250528&channel=chunlei&web=1&bdstoken=e6bc800efaabbc3b1b07952bedc1d445&logid=RENBODQ1MkY3Mzg4MEMzOUUzOTBCQ0JCRDM0NEYwMzY6Rkc9MQ==&clienttype=0&dp-logid=25871100140032000048';
-        $res = CurlUtils::cookie($cookie)->post($url, 'path=//parse_file&isdir=1&size=&block_list=[]&method=post&dataType=json')->obj(true);
+        $ua = "User-Agent: Mozilla/5.0 (Linux; Android 6.0.1; OPPO R9s Plus Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Mobile Safari/537.36";
+        //$res = CurlUtils::cookie($cookie)->post($url, 'path=//parse_file&isdir=1&size=&block_list=[]&method=post&dataType=json')->obj(true);
+        $res = postUrlCurl($url, $ua, $cookie, "path=//parse_file&isdir=1&size=&block_list=[]&method=post&dataType=json");
         if ($res['errno'] == 0){
             return true;
         }
@@ -245,7 +248,8 @@ class Parse extends BaseController
     }
 
     public static function transfer($cookie, $shareid, $from, $fsid, $randsk, $shareurl){
-        $bdstoken = CurlUtils::cookie($cookie[0])->get("https://pan.baidu.com/api/gettemplatevariable?clienttype=0&app_id=250528&web=1&fields=[%22bdstoken%22,%22token%22,%22uk%22,%22isdocuser%22,%22servertime%22]")->obj(true);
+        $ua = "User-Agent: Mozilla/5.0 (Linux; Android 6.0.1; OPPO R9s Plus Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Mobile Safari/537.36";
+        $bdstoken = getUrlCurl("https://pan.baidu.com/api/gettemplatevariable?clienttype=0&app_id=250528&web=1&fields=[%22bdstoken%22,%22token%22,%22uk%22,%22isdocuser%22,%22servertime%22]", $ua, $cookie[0]);
         $bdstoken = $bdstoken['result']['bdstoken'];
         $randsk = urlencode($randsk);
         $url = "https://pan.baidu.com/share/transfer?shareid=$shareid&from=$from&channel=chunlei&sekey=$randsk&ondup=newcopy&web=1&app_id=250528&bdstoken=$bdstoken&logid=QTU4NjczRTM3OEFDNkI1NUQ0QzExQ0VFOEY5M0VGREQ6Rkc9MQ==&clienttype=0";
@@ -260,7 +264,7 @@ class Parse extends BaseController
             'fsidlist'=>"[$fsid]",
             'path'=>'/parse_file'
         );
-        $res = CurlUtils::cookie($cookie[0])->header($header)->post($url, $data)->referer($shareurl)->obj(true);
+        $res = postUrlCurl($url, $ua, $cookie[0],$data, $header,$shareurl);
         if($res['errno'] == 9013){
             $model = new SvipModel();
             $model->updateSvip($cookie[1], array('state' => -1));
