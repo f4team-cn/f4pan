@@ -252,19 +252,42 @@ class Parse extends BaseController
         $bdstoken = getUrlCurl("https://pan.baidu.com/api/gettemplatevariable?clienttype=0&app_id=250528&web=1&fields=[%22bdstoken%22,%22token%22,%22uk%22,%22isdocuser%22,%22servertime%22]", $ua, $cookie[0]);
         $bdstoken = $bdstoken['result']['bdstoken'];
         $randsk = urlencode($randsk);
-        $url = "https://pan.baidu.com/share/transfer?shareid=$shareid&from=$from&channel=chunlei&sekey=$randsk&ondup=newcopy&web=1&app_id=250528&bdstoken=$bdstoken&logid=QTU4NjczRTM3OEFDNkI1NUQ0QzExQ0VFOEY5M0VGREQ6Rkc9MQ==&clienttype=0";
         $cookie[0] .= ";BDCLND=$randsk";
-        $header =
-            [
-                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63',
-                'Connection: Keep-Alive',
-                'Content-Type: application/x-www-form-urlencoded'
-            ];
-        $data = array(
-            'fsidlist'=>"[$fsid]",
-            'path'=>'/parse_file'
-        );
-        $res = postUrlCurl($url, $ua, $cookie[0],$data, $header,$shareurl);
+        //curl
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://pan.baidu.com/share/transfer?shareid=$shareid&from=$from&sekey=$randsk&ondup=newcopy&async=1&channel=chunlei&web=1&app_id=250528&bdstoken=$bdstoken&logid=N0Y0NTVBMDg1NkZFNDVFMjVEQzYxMUE0OUUwMEM5QzM6Rkc9MQ%3D%3D&clienttype=0&dp-logid=48806300903566960041",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => "fsidlist=[$fsid]&path=/parse_file&type=1'",
+            CURLOPT_COOKIE => $cookie[0],
+            CURLOPT_HTTPHEADER => [
+              'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+              'Accept: application/json, text/javascript, */*; q=0.01',
+              'Accept-Encoding: gzip, deflate, br, zstd',
+              'Content-Type: application/x-www-form-urlencoded',
+              'sec-ch-ua-platform: "Android"',
+              'X-Requested-With: XMLHttpRequest',
+              'sec-ch-ua: "Android WebView";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+              'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+              'sec-ch-ua-mobile: ?1',
+              'Origin: https://pan.baidu.com',
+              'Sec-Fetch-Site: same-origin',
+              'Sec-Fetch-Mode: cors',
+              'Sec-Fetch-Dest: empty',
+              'Referer: '.$shareurl,
+              'Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
+           ],
+        ]);
+
+        $res = json_decode(curl_exec($curl), true);
+        curl_close($curl);
+        //print_r($res);
         if($res['errno'] == 9013){
             $model = new SvipModel();
             $model->updateSvip($cookie[1], array('state' => -1));
